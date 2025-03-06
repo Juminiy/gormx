@@ -10,8 +10,8 @@ import (
 )
 
 type Config struct {
-	PluginName   string // default: gormx:tenants
-	TagKey       string // default: gx
+	Name         string // default: gormx:tenants
+	TagKey       string // default: gormx
 	TagTenantKey string // default: tenant
 	TxTenantKey  string // default: tenant_id
 	TxTenantsKey string // default: tenant_ids
@@ -23,7 +23,7 @@ type Tenant struct {
 }
 
 func (cfg *Config) TenantInfo(tx *gorm.DB) *Tenant {
-	tenantInfoKey := util.StringJoin(":", cfg.PluginName, cfg.TagKey, cfg.TagTenantKey)
+	tenantInfoKey := util.StringJoin(":", cfg.Name, cfg.TagKey, cfg.TagTenantKey)
 	if tInfo, ok := tx.Get(tenantInfoKey); ok {
 		return tInfo.(*Tenant)
 	}

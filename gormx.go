@@ -4,18 +4,19 @@ import (
 	"github.com/Juminiy/gormx/plugins"
 	"github.com/Juminiy/gormx/schemas"
 	"github.com/Juminiy/gormx/tenants"
+	"github.com/Juminiy/gormx/uniques"
 	"gorm.io/gorm"
 )
 
 type Config struct {
-	PluginName   string // no default value, "" will be error, plugin will not be effect
-	TagKey       string // default: gormx
-	TagUniqueKey string // default: unique
+	PluginName string // no default value, "" will be error, plugin will not be effect
+	TagKey     string // default: gormx
 
 	*Option
 
 	schCfg *schemas.Config
 	tetCfg *tenants.Config
+	unqCfg *uniques.Config
 }
 
 func (cfg *Config) Name() string {
@@ -29,24 +30,25 @@ func (cfg *Config) Initialize(tx *gorm.DB) error {
 	if len(cfg.TagKey) == 0 {
 		cfg.TagKey = "gormx"
 	}
-	if len(cfg.TagUniqueKey) == 0 {
-		cfg.TagUniqueKey = "unique"
-	}
 
 	cfg.Option = &Option{}
 
 	cfg.schCfg = &schemas.Config{
-		PluginName:   cfg.PluginName + ":schemas",
-		TagKey:       cfg.TagKey,
-		TagUniqueKey: cfg.TagUniqueKey,
+		Name:   cfg.PluginName + ":schemas",
+		TagKey: cfg.TagKey,
 	}
 	cfg.tetCfg = &tenants.Config{
-		PluginName:   cfg.PluginName + ":tenants",
+		Name:         cfg.PluginName + ":tenants",
 		TagKey:       cfg.TagKey,
 		TagTenantKey: "tenant",
 		TxTenantKey:  "tenant_id",
 		TxTenantsKey: "tenant_ids",
 		TxSkipKey:    "skip_tenant",
+	}
+	cfg.unqCfg = &uniques.Config{
+		Name:         cfg.PluginName + ":uniques",
+		TagKey:       cfg.TagKey,
+		TagUniqueKey: "unique",
 	}
 
 	return plugins.OneError(
@@ -74,7 +76,7 @@ func (cfg *Config) Initialize(tx *gorm.DB) error {
 
 type Option struct {
 	DisableFieldDup          bool // effect on create and update
-	DisableComplexFieldDup   bool // effect on create
+	EnableComplexFieldDup    bool // effect on create
 	AllowTenantGlobalDelete  bool // effect on delete, if false: raise error when clause only have (tenant) and (soft_delete)
 	BeforeDeleteDoQuery      bool // effect on delete, use with clause.Returning, when database not support Returning
 	AllowTenantGlobalUpdate  bool // effect on update, if false: raise error when clause only have (tenant) and (soft_delete)
@@ -95,6 +97,7 @@ type Option struct {
 const OptionKey = "session:option_config"
 
 func (cfg *Config) OptionConfig(tx *gorm.DB) Option {
+	cfg.SchemasCfg().ParseSchema(tx)
 	if v, ok := tx.Get(OptionKey); ok {
 		if vRecv, ok := v.(Option); ok {
 			return vRecv
@@ -103,21 +106,4 @@ func (cfg *Config) OptionConfig(tx *gorm.DB) Option {
 		}
 	}
 	return *cfg.Option
-}
-
-type Cfg struct {
-	key string
-}
-
-func (c *Cfg) Set(tx *gorm.DB) *gorm.DB {
-	return tx.Set(c.key, struct{}{})
-}
-
-func (c *Cfg) OK(tx *gorm.DB) bool {
-	_, ok := tx.Get(c.key)
-	return ok
-}
-
-var SkipQuery = Cfg{
-	key: "internal:skip_query_callback",
 }

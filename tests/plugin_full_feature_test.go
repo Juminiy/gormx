@@ -18,7 +18,7 @@ func txFull() *gorm.DB {
 		Set("user_id", 114514).
 		Set(gormx.OptionKey, gormx.Option{
 			DisableFieldDup:          false,
-			DisableComplexFieldDup:   true,
+			EnableComplexFieldDup:    true,
 			AllowTenantGlobalDelete:  false,
 			BeforeDeleteDoQuery:      true,
 			AllowTenantGlobalUpdate:  false,
@@ -169,11 +169,11 @@ func TestDeleteWithTenantUser(t *testing.T) {
 
 func TestQueryWithTenant(t *testing.T) {
 	var cw CalicoWeave
-	Err(t, txFull().First(&cw, 10).Error)
+	Err(t, txFull().First(&cw, 3).Error)
 	t.Log(Enc(cw))
 
 	var cwList []CalicoWeave
-	Err(t, txFull().Find(&cwList, 10, 11).Error)
+	Err(t, txFull().Find(&cwList, 1, 2).Error)
 	t.Log(Enc(cwList))
 }
 

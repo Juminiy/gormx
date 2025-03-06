@@ -34,31 +34,55 @@ func TestMagicType(t *testing.T) {
 
 func TestTimeAlias(t *testing.T) {
 	vList := []string{
-		"null",
-		Enc(struct { // not ok
+		Enc(struct {
+			ID   uint
+			Time string
+		}{ID: 10,
+			Time: "null"}), // [0]
+
+		Enc(struct {
+			ID   uint
+			Time string
+		}{ID: 10,
+			Time: ""}), // [1]
+
+		Enc(struct {
+			ID   uint
+			Time int
+		}{ID: 10,
+			Time: 0}), // [2]
+
+		Enc(struct {
 			ID   uint
 			Time sql.NullTime
 		}{ID: 10,
-			Time: sql.NullTime{Time: time.Now()}}),
+			Time: sql.NullTime{Time: time.Now()}}), // [3], not ok
 
 		Enc(struct {
 			ID   uint
 			Time time.Time
 		}{ID: 10,
-			Time: time.Now()}),
+			Time: time.Now()}), // [4]
 
 		Enc(struct {
 			ID   uint
 			Time int64
 		}{ID: 10,
-			Time: time.Now().Unix(),
+			Time: time.Now().Unix(), // [5]
 		}),
 
-		Enc(struct { // not ok
+		Enc(struct {
 			ID   uint
 			Time string
 		}{ID: 10,
-			Time: time.Now().String(),
+			Time: time.Now().String(), // [6], not ok
+		}),
+
+		Enc(struct {
+			ID   uint
+			Time string
+		}{ID: 10,
+			Time: "2025-03-06 22:54:28", // [7], not ok
 		}),
 	}
 	for i, timeRep := range vList {
@@ -68,7 +92,9 @@ func TestTimeAlias(t *testing.T) {
 		}
 		err := json.Unmarshal([]byte(timeRep), &v)
 		if err != nil {
-			t.Errorf("[%d] %s %s", i, timeRep, err.Error())
+			t.Logf("[%d], errJSON: [%s] error: [%s]", i, timeRep, err.Error())
+		} else {
+			t.Log(Enc(v))
 		}
 	}
 

@@ -20,6 +20,7 @@ func BeforeQueryOmit(tx *gorm.DB) {
 	}
 }
 
+// TODO: need to fix AfterFindMap
 func AfterFindMapCallHook(db *gorm.DB) {
 	if sch, ok := hasSchemaAndDestIsMap(db); ok &&
 		!db.Statement.SkipHooks && sch.AfterFind {

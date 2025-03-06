@@ -4,6 +4,7 @@ import (
 	"github.com/Juminiy/gormx/deps"
 	"github.com/Juminiy/gormx/schemas"
 	"github.com/Juminiy/gormx/tenants"
+	"github.com/Juminiy/gormx/uniques"
 	"gorm.io/gorm"
 )
 
@@ -26,4 +27,8 @@ func (cfg *Config) SchemasCfg() *schemas.Config {
 
 func (cfg *Config) TenantsCfg() *tenants.Config {
 	return cfg.tetCfg
+}
+
+func (cfg *Config) UniquesCfg() *uniques.Config {
+	return cfg.unqCfg
 }

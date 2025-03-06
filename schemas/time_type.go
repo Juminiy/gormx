@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/Juminiy/kube/pkg/util"
+	"github.com/jinzhu/now"
 	"github.com/spf13/cast"
 	"time"
 )
@@ -21,7 +22,7 @@ func (t Time) MarshalJSON() ([]byte, error) {
 }
 
 func (t *Time) UnmarshalJSON(b []byte) error {
-	if bStr := util.Bytes2StringNoCopy(b); bStr == "null" {
+	if bStr := util.Bytes2StringNoCopy(b); NotValidJSONValue(bStr) {
 		t.Valid = false
 		return nil
 	} else if err := t.Time.UnmarshalJSON(b); err == nil {
@@ -33,7 +34,28 @@ func (t *Time) UnmarshalJSON(b []byte) error {
 			t.Time = unixTime
 			return nil
 		}
+	} else if parsedTime, err := now.Parse(bStr); err == nil {
+		t.Valid = true
+		t.Time = parsedTime
+	} else {
+		nullTime := sql.NullTime{}
+		if err := json.Unmarshal(b, &nullTime); err == nil {
+			*t = Time(nullTime)
+		}
 	}
+
 	t.Valid = false
 	return ErrTimeNotValid
 }
+
+func NotValidJSONValue(s string) bool {
+	return util.ElemIn(s,
+		`null`, ``, `0`, `0.0`,
+		`"null"`, `""`, `"0"`, `"0.0"`,
+	)
+}
+
+/*
+func TrimStrEscape(s string) string {
+	return strings.TrimRight(strings.TrimLeft(s, `"`), `"`)
+}*/

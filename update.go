@@ -7,7 +7,7 @@ import (
 )
 
 func (cfg *Config) BeforeUpdate(tx *gorm.DB) {
-	if tx.Error != nil {
+	if tx.Error != nil || callback.SkipUpdate.OK(tx) {
 		return
 	}
 	sCfg := cfg.OptionConfig(tx)
@@ -32,7 +32,7 @@ func (cfg *Config) BeforeUpdate(tx *gorm.DB) {
 	}
 
 	if !sCfg.DisableFieldDup {
-		cfg.SchemasCfg().FieldDupCheck(tx, true)
+		cfg.UniquesCfg().FieldDupCheck(tx, true, sCfg.EnableComplexFieldDup)
 		if tx.Error != nil {
 			return
 		}

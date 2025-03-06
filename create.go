@@ -7,13 +7,13 @@ import (
 )
 
 func (cfg *Config) BeforeCreate(tx *gorm.DB) {
-	if tx.Error != nil {
+	if tx.Error != nil || callback.SkipCreate.OK(tx) {
 		return
 	}
 	sCfg := cfg.OptionConfig(tx)
 
 	if !sCfg.DisableFieldDup {
-		cfg.SchemasCfg().FieldDupCheck(tx, false)
+		cfg.UniquesCfg().FieldDupCheck(tx, false, sCfg.EnableComplexFieldDup)
 		if tx.Error != nil {
 			return
 		}
@@ -33,7 +33,7 @@ func (cfg *Config) BeforeCreate(tx *gorm.DB) {
 }
 
 func (cfg *Config) AfterCreate(tx *gorm.DB) {
-	if tx.Error != nil {
+	if tx.Error != nil || callback.SkipCreate.OK(tx) {
 		return
 	}
 	sCfg := cfg.OptionConfig(tx)

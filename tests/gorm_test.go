@@ -5,7 +5,7 @@ import (
 	"errors"
 	"github.com/Juminiy/gormx"
 	"github.com/Juminiy/gormx/clauses"
-	"github.com/Juminiy/gormx/schemas"
+	"github.com/Juminiy/gormx/uniques"
 	"github.com/Juminiy/kube/pkg/util"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -43,7 +43,7 @@ func init() {
 }
 
 var Enc = func(v any) string {
-	bs, _ := json.MarshalIndent(v, " ", "")
+	bs, _ := json.MarshalIndent(v, "", "  ")
 	return string(bs)
 }
 var Dec = func(s string, v any) {
@@ -52,7 +52,7 @@ var Dec = func(s string, v any) {
 
 var Err = func(t *testing.T, err error) {
 	if err != nil {
-		if schemas.IsFieldDupError(err) ||
+		if uniques.IsFieldDupError(err) ||
 			errors.Is(err, gormx.ErrNotAllowTenantGlobalUpdate) ||
 			errors.Is(err, gormx.ErrNotAllowTenantGlobalDelete) ||
 			errors.Is(err, gorm.ErrRecordNotFound) {

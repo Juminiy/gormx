@@ -9,7 +9,7 @@ import (
 )
 
 func (cfg *Config) BeforeDelete(tx *gorm.DB) {
-	if tx.Error != nil {
+	if tx.Error != nil || callback.SkipDelete.OK(tx) {
 		return
 	}
 	sCfg := cfg.OptionConfig(tx)

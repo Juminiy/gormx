@@ -7,7 +7,7 @@ import (
 )
 
 func (cfg *Config) BeforeQuery(tx *gorm.DB) {
-	if tx.Error != nil || SkipQuery.OK(tx) {
+	if tx.Error != nil || callback.SkipQuery.OK(tx) {
 		return
 	}
 	if cfg.OptionConfig(tx).BeforeQueryOmitField {
@@ -18,7 +18,7 @@ func (cfg *Config) BeforeQuery(tx *gorm.DB) {
 }
 
 func (cfg *Config) AfterQuery(tx *gorm.DB) {
-	if tx.Error != nil {
+	if tx.Error != nil || callback.SkipQuery.OK(tx) {
 		return
 	}
 	sCfg := cfg.OptionConfig(tx)

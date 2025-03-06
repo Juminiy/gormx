@@ -10,9 +10,8 @@ import (
 type Config struct {
 	PluginName string
 
-	// effect on where clause, on raw and row, suggest to Wrap sql by: SELECT * FROM (your sql string)
-	AllowWriteClauseToRawOrRow    bool
-	CheckAndOmitNotExistingColumn bool
+	AllowWriteClauseToRawOrRow    bool // effect on raw and row where clause, suggest to Wrap sql by: SELECT * FROM (your sql string)
+	CheckAndOmitNotExistingColumn bool // effect on clause.OrderBy, clause.OrderByColumn
 
 	BeforePlugins []string
 	AfterPlugins  []string

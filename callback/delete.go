@@ -11,7 +11,7 @@ import (
 func DoQueryBeforeDelete(tx *gorm.DB) {
 	ntx := tx.Session(&gorm.Session{NewDB: true})
 
-	/*ntx = _SkipQueryCallback.Set(ntx)*/
+	ntx = SkipQuery.Set(ntx)
 
 	if schema := tx.Statement.Schema; schema != nil {
 		slices.All(schema.QueryClauses)(func(_ int, c clause.Interface) bool {

@@ -66,9 +66,9 @@ func setUpDestMapStmtModel(tx *gorm.DB, sch *schema.Schema) {
 	case *[]map[string]any:
 		structSlice := deps.IndI(tx.Statement.Model)
 		slices.All(*mapValue)(func(_ int, m map[string]any) bool {
-			newElem := reflect.New(sch.ModelType)              // *T
-			deps.IndI(newElem).StructSet(toFieldValue(sch, m)) // *T <- m
-			structSlice.SliceAppend(newElem.Interface())       // Model = append(Model, *T)
+			newElem := reflect.New(sch.ModelType)             // *T
+			deps.Ind(newElem).StructSet(toFieldValue(sch, m)) // *T <- m
+			structSlice.SliceAppend(newElem.Interface())      // Model = append(Model, *T)
 			return true
 		})
 
@@ -119,7 +119,7 @@ func scanDestMapToModel(tx *gorm.DB) {
 	case *[]map[string]any:
 		modelSlice := deps.IndI(tx.Statement.Model)
 		slices.All(*destValue)(func(i int, m map[string]any) bool {
-			deps.IndI(modelSlice.Index(i)).StructSet(m)
+			deps.Ind(modelSlice.Index(i)).StructSet(m)
 			return true
 		})
 	}

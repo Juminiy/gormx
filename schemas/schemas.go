@@ -10,9 +10,8 @@ import (
 )
 
 type Config struct {
-	PluginName   string // default: gormx:schemas
-	TagKey       string // default: gx
-	TagUniqueKey string // default: unique
+	Name   string // default: gormx:schemas
+	TagKey string // default: gormx
 
 	cacheStore *sync.Map
 }
@@ -53,9 +52,9 @@ func (cfg *Config) GraspSchema(tx *gorm.DB, zeroList ...any) {
 }
 
 func (cfg *Config) graspSchemaKey(tableName string) string {
-	return util.StringJoin(":", cfg.PluginName, "grasp_schema", tableName)
+	return util.StringJoin(":", cfg.Name, "grasp_schema", tableName)
 }
 
 func (cfg *Config) graspModelKey(tableName string) string {
-	return util.StringJoin(":", cfg.PluginName, "grasp_model", tableName)
+	return util.StringJoin(":", cfg.Name, "grasp_model", tableName)
 }
