@@ -16,7 +16,7 @@ func txFull() *gorm.DB {
 		Set("tenant_id", 1919810).
 		Set("tenant_ids", []uint{1919810, 1, 2, 3}).
 		Set("user_id", 114514).
-		Set(gormx.ConfigKey, gormx.Config{
+		Set(gormx.OptionKey, gormx.Option{
 			DisableFieldDup:          false,
 			DisableComplexFieldDup:   true,
 			AllowTenantGlobalDelete:  false,

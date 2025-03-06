@@ -7,7 +7,7 @@ import (
 )
 
 var _txListDup = func() *gorm.DB {
-	return _txTenant().Set(gormx.ConfigKey, gormx.Config{
+	return _txTenant().Set(gormx.OptionKey, gormx.Option{
 		DisableComplexFieldDup: true,
 	})
 }

@@ -2,6 +2,8 @@ package gormx
 
 import (
 	"github.com/Juminiy/gormx/plugins"
+	"github.com/Juminiy/gormx/schemas"
+	"github.com/Juminiy/gormx/tenants"
 	"gorm.io/gorm"
 )
 
@@ -10,36 +12,10 @@ type Config struct {
 	TagKey       string // default: gormx
 	TagUniqueKey string // default: unique
 
-	DisableFieldDup          bool // effect on create and update
-	DisableComplexFieldDup   bool // effect on create
-	AllowTenantGlobalDelete  bool // effect on delete, if false: raise error when clause only have (tenant) and (soft_delete)
-	BeforeDeleteDoQuery      bool // effect on delete, use with clause.Returning, when database not support Returning
-	AllowTenantGlobalUpdate  bool // effect on update, if false: raise error when clause only have (tenant) and (soft_delete)
-	UpdateMapOmitZeroElemKey bool // effect on update
-	UpdateMapOmitUnknownKey  bool // effect on update
-	UpdateMapSetPkToClause   bool // effect on update
-	AfterCreateShowTenant    bool // effect on create
-	BeforeQueryOmitField     bool // effect on query, use with tag `gorm:"->:false"`
-	AfterQueryShowTenant     bool // effect on query
+	*Option
 
-	// callbacks Hooks
-	BeforeCreateMapCallHooks bool // effect on before create map
-	AfterCreateMapCallHooks  bool // effect on after create map, it's a low efficiency option, not to open it unless strong need
-	UpdateMapCallHooks       bool // effect on update map
-	AfterFindMapCallHooks    bool // effect on find map
-}
-
-const ConfigKey = "session:config_key"
-
-func SessionConfig(cfg *Config, tx *gorm.DB) Config {
-	if v, ok := tx.Get(ConfigKey); ok {
-		if vRecv, ok := v.(Config); ok {
-			return vRecv
-		} else if pRecv, ok := v.(*Config); ok && pRecv != nil {
-			return *pRecv
-		}
-	}
-	return *cfg
+	schCfg *schemas.Config
+	tetCfg *tenants.Config
 }
 
 func (cfg *Config) Name() string {
@@ -50,6 +26,29 @@ func (cfg *Config) Initialize(tx *gorm.DB) error {
 	if len(cfg.PluginName) == 0 {
 		return plugins.NoPluginName
 	}
+	if len(cfg.TagKey) == 0 {
+		cfg.TagKey = "gormx"
+	}
+	if len(cfg.TagUniqueKey) == 0 {
+		cfg.TagUniqueKey = "unique"
+	}
+
+	cfg.Option = &Option{}
+
+	cfg.schCfg = &schemas.Config{
+		PluginName:   cfg.PluginName + ":schemas",
+		TagKey:       cfg.TagKey,
+		TagUniqueKey: cfg.TagUniqueKey,
+	}
+	cfg.tetCfg = &tenants.Config{
+		PluginName:   cfg.PluginName + ":tenants",
+		TagKey:       cfg.TagKey,
+		TagTenantKey: "tenant",
+		TxTenantKey:  "tenant_id",
+		TxTenantsKey: "tenant_ids",
+		TxSkipKey:    "skip_tenant",
+	}
+
 	return plugins.OneError(
 		tx.Callback().Create().Before("gorm:before_create").
 			Register(plugins.CallbackName(cfg.PluginName, true, 'C'), cfg.BeforeCreate),
@@ -71,6 +70,39 @@ func (cfg *Config) Initialize(tx *gorm.DB) error {
 		/*tx.Callback().Delete().After("gorm:after_delete").
 		Register(plugins.CallbackName(cfg.PluginName, false, 'D'), cfg.AfterDelete),*/
 	)
+}
+
+type Option struct {
+	DisableFieldDup          bool // effect on create and update
+	DisableComplexFieldDup   bool // effect on create
+	AllowTenantGlobalDelete  bool // effect on delete, if false: raise error when clause only have (tenant) and (soft_delete)
+	BeforeDeleteDoQuery      bool // effect on delete, use with clause.Returning, when database not support Returning
+	AllowTenantGlobalUpdate  bool // effect on update, if false: raise error when clause only have (tenant) and (soft_delete)
+	UpdateMapOmitZeroElemKey bool // effect on update
+	UpdateMapOmitUnknownKey  bool // effect on update
+	UpdateMapSetPkToClause   bool // effect on update
+	AfterCreateShowTenant    bool // effect on create
+	BeforeQueryOmitField     bool // effect on query, use with tag `gorm:"->:false"`
+	AfterQueryShowTenant     bool // effect on query
+
+	// callbacks Hooks
+	BeforeCreateMapCallHooks bool // effect on before create map
+	AfterCreateMapCallHooks  bool // effect on after create map, it's a low efficiency option, not to open it unless strong need
+	UpdateMapCallHooks       bool // effect on update map
+	AfterFindMapCallHooks    bool // effect on find map
+}
+
+const OptionKey = "session:option_config"
+
+func (cfg *Config) OptionConfig(tx *gorm.DB) Option {
+	if v, ok := tx.Get(OptionKey); ok {
+		if vRecv, ok := v.(Option); ok {
+			return vRecv
+		} else if pRecv, ok := v.(*Option); ok && pRecv != nil {
+			return *pRecv
+		}
+	}
+	return *cfg.Option
 }
 
 type Cfg struct {

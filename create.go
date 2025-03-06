@@ -3,8 +3,6 @@ package gormx
 import (
 	"github.com/Juminiy/gormx/callback"
 	"github.com/Juminiy/gormx/deps"
-	"github.com/Juminiy/gormx/schemas"
-	"github.com/Juminiy/gormx/tenants"
 	"gorm.io/gorm"
 )
 
@@ -12,10 +10,10 @@ func (cfg *Config) BeforeCreate(tx *gorm.DB) {
 	if tx.Error != nil {
 		return
 	}
-	sCfg := SessionConfig(cfg, tx)
+	sCfg := cfg.OptionConfig(tx)
 
 	if !sCfg.DisableFieldDup {
-		(&schemas.Config{}).FieldDupCheck(tx, false)
+		cfg.SchemasCfg().FieldDupCheck(tx, false)
 		if tx.Error != nil {
 			return
 		}
@@ -27,7 +25,7 @@ func (cfg *Config) BeforeCreate(tx *gorm.DB) {
 
 	callback.BeforeCreateSetDefaultValuesToMap(tx)
 
-	if tInfo := tenants.Default().TenantInfo(tx); tInfo != nil {
+	if tInfo := cfg.TenantsCfg().TenantInfo(tx); tInfo != nil {
 		deps.Ind(tx.Statement.ReflectValue).SetField(map[string]any{
 			tInfo.Field.Name: tInfo.Field.Value, // FieldName
 		})
@@ -38,7 +36,7 @@ func (cfg *Config) AfterCreate(tx *gorm.DB) {
 	if tx.Error != nil {
 		return
 	}
-	sCfg := SessionConfig(cfg, tx)
+	sCfg := cfg.OptionConfig(tx)
 
 	callback.AfterCreateSetAutoIncPkToMap(tx)
 
@@ -47,7 +45,7 @@ func (cfg *Config) AfterCreate(tx *gorm.DB) {
 	}
 
 	if !sCfg.AfterCreateShowTenant {
-		if tInfo := tenants.Default().TenantInfo(tx); tInfo != nil {
+		if tInfo := cfg.TenantsCfg().TenantInfo(tx); tInfo != nil {
 			deps.Ind(tx.Statement.ReflectValue).SetField(map[string]any{
 				tInfo.Field.Name: nil, // FieldName
 			})

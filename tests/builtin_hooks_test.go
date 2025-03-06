@@ -78,7 +78,7 @@ func TestBuiltinHooks(t *testing.T) {
 }
 
 func txHooks() *gorm.DB {
-	return txMixed().Set(gormx.ConfigKey, gormx.Config{
+	return txMixed().Set(gormx.OptionKey, gormx.Option{
 		BeforeCreateMapCallHooks: true,
 		UpdateMapCallHooks:       true,
 		AfterFindMapCallHooks:    true,

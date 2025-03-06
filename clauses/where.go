@@ -1,8 +1,8 @@
 package clauses
 
 import (
+	"github.com/Juminiy/gormx/deps"
 	"github.com/Juminiy/kube/pkg/util"
-	rv3 "github.com/Juminiy/kube/pkg/util/safe_reflect/v3"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"gorm.io/gorm/schema"
@@ -67,7 +67,7 @@ func destKindIsStructAndHasPrimaryKeyNotZero(stmt *gorm.Statement) bool {
 
 func destKindIsMapAndHasPrimaryKeyNotZero(stmt *gorm.Statement) bool {
 	if stmt.SQL.Len() == 0 {
-		if mapRv := rv3.Indirect(stmt.Dest); mapRv.Value.Kind() == reflect.Map && stmt.Schema != nil {
+		if mapRv := deps.IndI(stmt.Dest); mapRv.Value.Kind() == reflect.Map && stmt.Schema != nil {
 			mapValue := mapRv.MapValues()
 			for _, pF := range stmt.Schema.PrimaryFields {
 				if mapElem, ok := util.MapElemOk(mapValue, pF.DBName); ok {

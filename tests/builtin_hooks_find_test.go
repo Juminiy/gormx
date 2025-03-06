@@ -17,7 +17,7 @@ func TestFindMapHooks(t *testing.T) {
 
 func TestBeforeQueryOmitField(t *testing.T) {
 	var list []AppUser
-	Err(t, _txTenant().Set(gormx.ConfigKey, gormx.Config{
+	Err(t, _txTenant().Set(gormx.OptionKey, gormx.Option{
 		BeforeQueryOmitField: true,
 	}).First(&list).Error)
 	t.Log(Enc(list))

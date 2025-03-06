@@ -2,7 +2,6 @@ package callback
 
 import (
 	"github.com/Juminiy/gormx/deps"
-	rv "github.com/Juminiy/kube/pkg/util/safe_reflect"
 	"github.com/samber/lo"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
@@ -100,7 +99,7 @@ func scanModelValueToDestValue(modelValue, destValue map[string]any) {
 		if destFv, ok := destValue[field]; ok && reflect.ValueOf(modelFv).IsZero() {
 			delete(destValue, field)
 		} else if (!ok || reflect.ValueOf(destFv).IsZero()) &&
-			rv.CanDirectCompare(reflect.TypeOf(modelFv)) &&
+			deps.Comp(reflect.TypeOf(modelFv)) &&
 			!reflect.ValueOf(modelFv).IsZero() {
 			destValue[field] = modelFv
 		}

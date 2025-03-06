@@ -1,6 +1,7 @@
 package deps
 
 import (
+	rv "github.com/Juminiy/kube/pkg/util/safe_reflect"
 	rv2 "github.com/Juminiy/kube/pkg/util/safe_reflect/v2"
 	rv3 "github.com/Juminiy/kube/pkg/util/safe_reflect/v3"
 	"reflect"
@@ -31,3 +32,5 @@ func Tag(s string) rv3.Tag {
 func AS(i any) []any {
 	return rv3.ToAnySlice(i)
 }
+
+func Comp(rt reflect.Type) bool { return rv.CanDirectCompare(rt) }

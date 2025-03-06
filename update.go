@@ -3,7 +3,6 @@ package gormx
 import (
 	"github.com/Juminiy/gormx/callback"
 	"github.com/Juminiy/gormx/clauses"
-	"github.com/Juminiy/gormx/schemas"
 	"gorm.io/gorm"
 )
 
@@ -11,7 +10,7 @@ func (cfg *Config) BeforeUpdate(tx *gorm.DB) {
 	if tx.Error != nil {
 		return
 	}
-	sCfg := SessionConfig(cfg, tx)
+	sCfg := cfg.OptionConfig(tx)
 
 	if !sCfg.AllowTenantGlobalUpdate && !tx.AllowGlobalUpdate {
 		if clauses.NoWhereClause(tx) {
@@ -33,7 +32,7 @@ func (cfg *Config) BeforeUpdate(tx *gorm.DB) {
 	}
 
 	if !sCfg.DisableFieldDup {
-		(&schemas.Config{}).FieldDupCheck(tx, true)
+		cfg.SchemasCfg().FieldDupCheck(tx, true)
 		if tx.Error != nil {
 			return
 		}

@@ -9,6 +9,15 @@ import (
 	"gorm.io/gorm/schema"
 )
 
+type Config struct {
+	PluginName   string // default: gormx:tenants
+	TagKey       string // default: gx
+	TagTenantKey string // default: tenant
+	TxTenantKey  string // default: tenant_id
+	TxTenantsKey string // default: tenant_ids
+	TxSkipKey    string // default: skip_tenant
+}
+
 type Tenant struct {
 	Field schemas.Field
 }

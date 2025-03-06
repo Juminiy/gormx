@@ -21,7 +21,7 @@ func DoQueryBeforeDelete(tx *gorm.DB) {
 	}
 
 	if txClause, ok := clauses.WhereClause(tx); ok {
-		ntx.Where(txClause)
+		ntx.Statement.AddClause(txClause)
 	}
 
 	if returning, ok := util.MapElemOk(tx.Statement.Clauses, "RETURNING"); ok {

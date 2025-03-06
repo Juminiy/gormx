@@ -55,7 +55,7 @@ func TestCallbacksBeforeUpdateHooks(t *testing.T) {
 }
 
 func txHooksUpdate() *gorm.DB {
-	return txMixed().Set(gormx.ConfigKey, gormx.Config{
+	return txMixed().Set(gormx.OptionKey, gormx.Option{
 		UpdateMapOmitUnknownKey:  true,
 		UpdateMapSetPkToClause:   true,
 		BeforeCreateMapCallHooks: true,
@@ -65,7 +65,7 @@ func txHooksUpdate() *gorm.DB {
 }
 
 func TestOmitMapZeroValue(t *testing.T) {
-	Err(t, _txTenant().Set(gormx.ConfigKey, gormx.Config{
+	Err(t, _txTenant().Set(gormx.OptionKey, gormx.Option{
 		UpdateMapOmitZeroElemKey: true,
 	}).Table(`tbl_consumer`).
 		Where("id = ?", 2).

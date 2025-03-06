@@ -14,7 +14,7 @@ func _txTenant() *gorm.DB {
 
 func TestQueryBeforeDeleteOne(t *testing.T) {
 	prod := Product{}
-	err := _txTenant().Set(gormx.ConfigKey, gormx.Config{
+	err := _txTenant().Set(gormx.OptionKey, gormx.Option{
 		BeforeDeleteDoQuery: true,
 	}).Clauses(clause.Returning{Columns: []clause.Column{
 		{Name: "name"}, {Name: "desc"}, {Name: "code"},
@@ -27,7 +27,7 @@ func TestQueryBeforeDeleteOne(t *testing.T) {
 
 func TestQueryBeforeDeleteList(t *testing.T) {
 	prod := []Product{}
-	err := _txTenant().Set(gormx.ConfigKey, gormx.Config{
+	err := _txTenant().Set(gormx.OptionKey, gormx.Option{
 		BeforeDeleteDoQuery: true,
 	}).Delete(&prod, []int{2, 3, 4}).Error
 	if err != nil {
@@ -82,7 +82,7 @@ func TestSkipTenant(t *testing.T) {
 }
 
 func TestSkipFieldDup(t *testing.T) {
-	err := _txTenant().Set(gormx.ConfigKey, gormx.Config{
+	err := _txTenant().Set(gormx.OptionKey, gormx.Option{
 		DisableFieldDup: true,
 	}).Create(&Product{
 		Name:       "Coca-Cola",
@@ -95,19 +95,19 @@ func TestSkipFieldDup(t *testing.T) {
 }
 
 func TestDeleteTenantAll(t *testing.T) {
-	Err(t, _txTenant().Set(gormx.ConfigKey, gormx.Config{
+	Err(t, _txTenant().Set(gormx.OptionKey, gormx.Option{
 		AllowTenantGlobalDelete: true,
 	}).Delete(&Product{}).Error)
 }
 
 func TestUpdateTenantAll(t *testing.T) {
-	Err(t, _txTenant().Set(gormx.ConfigKey, gormx.Config{
+	Err(t, _txTenant().Set(gormx.OptionKey, gormx.Option{
 		AllowTenantGlobalUpdate: true,
 	}).Model(&Product{}).Update("code", "114514").Error)
 }
 
 func showT() *gorm.DB {
-	return _txTenant().Set(gormx.ConfigKey, gormx.Config{
+	return _txTenant().Set(gormx.OptionKey, gormx.Option{
 		DisableFieldDup:       true,
 		AfterCreateShowTenant: true,
 		AfterQueryShowTenant:  true,

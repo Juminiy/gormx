@@ -10,10 +10,11 @@ import (
 )
 
 type Config struct {
-	PluginName   string
-	TagKey       string
-	TagUniqueKey string
-	cacheStore   *sync.Map
+	PluginName   string // default: gormx:schemas
+	TagKey       string // default: gx
+	TagUniqueKey string // default: unique
+
+	cacheStore *sync.Map
 }
 
 func (cfg *Config) ParseSchema(tx *gorm.DB) {
@@ -34,6 +35,9 @@ func (cfg *Config) ParseSchema(tx *gorm.DB) {
 }
 
 func (cfg *Config) GraspSchema(tx *gorm.DB, zeroList ...any) {
+	if cfg.cacheStore == nil {
+		cfg.cacheStore = new(sync.Map)
+	}
 	slices.All(zeroList)(func(_ int, zeroV any) bool {
 		stmt := tx.Statement
 		err := stmt.Parse(zeroV)
