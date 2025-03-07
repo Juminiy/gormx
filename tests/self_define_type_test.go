@@ -54,35 +54,42 @@ func TestTimeAlias(t *testing.T) {
 
 		Enc(struct {
 			ID   uint
+			Time float64
+		}{ID: 10,
+			Time: 0.0, // [3]
+		}),
+
+		Enc(struct {
+			ID   uint
 			Time sql.NullTime
 		}{ID: 10,
-			Time: sql.NullTime{Time: time.Now()}}), // [3], not ok
+			Time: sql.NullTime{Time: time.Now()}}), // [4], not ok
 
 		Enc(struct {
 			ID   uint
 			Time time.Time
 		}{ID: 10,
-			Time: time.Now()}), // [4]
+			Time: time.Now()}), // [5]
 
 		Enc(struct {
 			ID   uint
 			Time int64
 		}{ID: 10,
-			Time: time.Now().Unix(), // [5]
+			Time: time.Now().Unix(), // [6]
 		}),
 
 		Enc(struct {
 			ID   uint
 			Time string
 		}{ID: 10,
-			Time: time.Now().String(), // [6], not ok
+			Time: time.Now().String(), // [7], not ok
 		}),
 
 		Enc(struct {
 			ID   uint
 			Time string
 		}{ID: 10,
-			Time: "2025-03-06 22:54:28", // [7], not ok
+			Time: "2025-03-06 22:54:28", // [8], not ok
 		}),
 	}
 	for i, timeRep := range vList {

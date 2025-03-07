@@ -5,14 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/Juminiy/kube/pkg/util"
-	"github.com/jinzhu/now"
 	"github.com/spf13/cast"
 	"time"
 )
 
 type Time sql.NullTime
 
-var ErrTimeNotValid = errors.New("value is not null or time.Time or sql.NullTime or timestamp")
+var ErrTimeNotValid = errors.New("value is not null or time.Time or timestamp")
 
 func (t Time) MarshalJSON() ([]byte, error) {
 	if t.Valid {
@@ -34,7 +33,7 @@ func (t *Time) UnmarshalJSON(b []byte) error {
 			t.Time = unixTime
 			return nil
 		}
-	} else if parsedTime, err := now.Parse(bStr); err == nil {
+	} /*else if parsedTime, err := now.Parse(bStr); err == nil {
 		t.Valid = true
 		t.Time = parsedTime
 	} else {
@@ -42,7 +41,7 @@ func (t *Time) UnmarshalJSON(b []byte) error {
 		if err := json.Unmarshal(b, &nullTime); err == nil {
 			*t = Time(nullTime)
 		}
-	}
+	}*/
 
 	t.Valid = false
 	return ErrTimeNotValid

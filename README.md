@@ -17,3 +17,4 @@ Reinforced for gorm, aims to be best partner of gorm, rich plugins and toolkits 
 4. New Feature report: TenantID as a type do data isolation, can be overlapped: tenant_id, user_id, admin_id, operator_id, ...
 5. New Plugin: codegen for gin+gorm, fiber+gorm short for `CodeGenerator`
 6. New Plugin: optlock short for `OptimisticLock`
+7. Feature report: new type in tenants.ID, tenants.HideID

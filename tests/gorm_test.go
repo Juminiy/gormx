@@ -27,17 +27,17 @@ func init() {
 		},
 	})
 	util.Must(err)
-	util.Must(tx.Use(&gormx.Config{
-		PluginName: "gormx",
-		TagKey:     "mt",
-	}))
 	util.Must(tx.Use(&clauses.Config{
-		PluginName:                 "clause_checker",
-		AllowWriteClauseToRawOrRow: true,
-		BeforePlugins:              []string{"gormx"},
+		PluginName:                    "clause_checker",
+		AllowWriteClauseToRawOrRow:    true,
+		CheckAndOmitNotExistingColumn: false,
+		BeforePlugins:                 []string{"gormx"},
 	}))
-	tx.Plugins["gormx"].(*gormx.Config).SchemasCfg().
-		GraspSchema(tx.DB, &Product{}, &AppUser{}, &Consumer{}, &CalicoWeave{})
+	util.Must(tx.Use(&gormx.Config{
+		PluginName:  "gormx",
+		TagKey:      "mt",
+		KnownModels: []any{&Product{}, &AppUser{}, &Consumer{}, &CalicoWeave{}},
+	}))
 	tx.DB = tx.Debug()
 	_tx = tx
 }

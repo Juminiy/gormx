@@ -9,8 +9,9 @@ import (
 )
 
 type Config struct {
-	PluginName string // no default value, "" will be error, plugin will not be effect
-	TagKey     string // default: gormx
+	PluginName  string // no default value, "" will be error, plugin will not be effect
+	TagKey      string // default: gormx
+	KnownModels []any  // must know your schemas(models, tables), or plugins will be folly
 
 	*Option
 
@@ -51,6 +52,7 @@ func (cfg *Config) Initialize(tx *gorm.DB) error {
 		TagUniqueKey: "unique",
 	}
 
+	cfg.SchemasCfg().GraspSchema(tx, cfg.KnownModels...)
 	return plugins.OneError(
 		tx.Callback().Create().Before("gorm:before_create").
 			Register(plugins.CallbackName(cfg.PluginName, true, 'C'), cfg.BeforeCreate),

@@ -9,20 +9,20 @@ import (
 	"gorm.io/gorm/schema"
 )
 
-type TenantID sql.Null[uint]
+type ID tenantID
 
-func (t TenantID) MarshalJSON() ([]byte, error) {
+func (t ID) MarshalJSON() ([]byte, error) {
 	if t.Valid {
 		return json.Marshal(t.V)
 	}
 	return json.Marshal(nil)
 }
 
-func (t *TenantID) UnmarshalJSON(b []byte) error {
-	if util.Bytes2StringNoCopy(b) == "null" {
+func (t *ID) UnmarshalJSON(b []byte) error {
+	if schemas.NotValidJSONValue(util.Bytes2StringNoCopy(b)) {
 		t.Valid = false
 		return nil
-	} else if err := json.Unmarshal(b, &t); err == nil {
+	} else if err := json.Unmarshal(b, &t.V); err == nil {
 		t.Valid = true
 		return nil
 	} else {
@@ -30,32 +30,47 @@ func (t *TenantID) UnmarshalJSON(b []byte) error {
 	}
 }
 
-func (t TenantID) QueryClauses(f *schema.Field) []clause.Interface {
-	return []clause.Interface{&Tenant{Field: schemas.Field{
-		Name:    f.Name,
-		DBTable: f.Schema.Table,
-		DBName:  f.DBName,
-		Value:   t.V,
-		Values:  nil,
-	}}}
+func (t ID) QueryClauses(f *schema.Field) []clause.Interface {
+	return tenantID(t).Clauses(f)
 }
 
-func (t TenantID) UpdateClauses(f *schema.Field) []clause.Interface {
-	return []clause.Interface{&Tenant{Field: schemas.Field{
-		Name:    f.Name,
-		DBTable: f.Schema.Table,
-		DBName:  f.DBName,
-		Value:   t.V,
-		Values:  nil,
-	}}}
+func (t ID) UpdateClauses(f *schema.Field) []clause.Interface {
+	return tenantID(t).Clauses(f)
 }
 
-func (t TenantID) DeleteClauses(f *schema.Field) []clause.Interface {
-	return []clause.Interface{&Tenant{Field: schemas.Field{
-		Name:    f.Name,
-		DBTable: f.Schema.Table,
-		DBName:  f.DBName,
-		Value:   t.V,
-		Values:  nil,
-	}}}
+func (t ID) DeleteClauses(f *schema.Field) []clause.Interface {
+	return tenantID(t).Clauses(f)
+}
+
+type HideID tenantID
+
+func (t HideID) MarshalJSON() ([]byte, error) {
+	return nil, nil
+}
+
+func (t *HideID) UnmarshalJSON(b []byte) error {
+	return nil
+}
+
+func (t HideID) QueryClauses(f *schema.Field) []clause.Interface {
+	return tenantID(t).Clauses(f)
+}
+
+func (t HideID) UpdateClauses(f *schema.Field) []clause.Interface {
+	return tenantID(t).Clauses(f)
+}
+
+func (t HideID) DeleteClauses(f *schema.Field) []clause.Interface {
+	return tenantID(t).Clauses(f)
+}
+
+type tenantID sql.Null[uint]
+
+func (t tenantID) Clauses(f *schema.Field) []clause.Interface {
+	if t.Valid {
+		fieldValue := schemas.FieldFromSchema(f)
+		fieldValue.Value = t.V
+		return []clause.Interface{&Tenant{Field: fieldValue}}
+	}
+	return nil
 }
