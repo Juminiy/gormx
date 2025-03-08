@@ -1,4 +1,4 @@
-package gorm_api
+package gormx_tests
 
 import (
 	"github.com/Juminiy/gormx"
@@ -55,7 +55,7 @@ func TestDeleteList(t *testing.T) {
 }
 
 func mtGrp() *gorm.DB {
-	return _tx.Set("tenant_ids", []int{1, 2, 3, 4, 5, 114514})
+	return _tx.Set("tenant_id_list", []int{1, 2, 3, 4, 5, 114514})
 }
 
 func TestQueryListInTenants(t *testing.T) {
@@ -65,8 +65,8 @@ func TestQueryListInTenants(t *testing.T) {
 }
 
 func mtSglAndGrp() *gorm.DB {
-	return _tx.Set("tenant_id", "9527").
-		Set("tenant_ids", []int{1, 2, 3, 4, 5, 114514})
+	return _tx.Set("tenant_id", "114514").
+		Set("tenant_id_list", []int{1, 2, 3, 4, 5, 114514})
 }
 
 func TestQueryListTenantChooseBest(t *testing.T) {

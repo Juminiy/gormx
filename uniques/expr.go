@@ -15,6 +15,7 @@ type rowValues struct {
 	FieldValue  map[string]any
 	ColumnValue map[string]any
 	*FieldDup
+	ForUpdate bool
 }
 
 func (d *rowValues) simple(tx *gorm.DB) {
@@ -38,7 +39,7 @@ func (d *rowValues) simple(tx *gorm.DB) {
 	if noExpr {
 		return
 	}
-	d.doCount(tx, orExpr)
+	d.doCount(tx, orExpr, d.ForUpdate)
 }
 
 // rowValuesExpr
@@ -99,7 +100,7 @@ func (d *rowsValues) complex(tx *gorm.DB) {
 	if noExpr {
 		return
 	}
-	d.doCount(tx, orExpr)
+	d.doCount(tx, orExpr, false)
 }
 
 func (d *rowsValues) expr() (orExpr clause.Expression, noExpr bool) {

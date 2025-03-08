@@ -1,4 +1,4 @@
-package gorm_api
+package gormx_tests
 
 import (
 	"github.com/Juminiy/gormx"
@@ -15,7 +15,9 @@ func TestCallbacksBeforeUpdate(t *testing.T) {
 	}).Error)
 
 	// update Map
-	Err(t, txMixed().Session(&gorm.Session{AllowGlobalUpdate: true}).
+	Err(t, txMixed().Set(gormx.OptionKey, gormx.Option{
+		UpdateMapSetPkToClause: true,
+	}).Session(&gorm.Session{AllowGlobalUpdate: true}).
 		Model(&Consumer{}).Updates(map[string]any{
 		"id":     2,
 		"app_id": 20,

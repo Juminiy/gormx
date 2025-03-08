@@ -3,7 +3,6 @@ package clauses
 import (
 	"github.com/Juminiy/kube/pkg/util"
 	"github.com/samber/lo"
-	"github.com/spf13/cast"
 	"gorm.io/gorm/clause"
 	"strings"
 )
@@ -38,9 +37,9 @@ func checkExprI(exprI clause.Expression) bool {
 		if util.AssertZero(exprV.Column) ||
 			util.AssertZero(exprV.Value) {
 			return false
-		} else if strings.HasPrefix(cast.ToString(exprV.Value), "%") {
-			// TODO: may be denied by cfg
-		}
+		} /*else if strings.HasPrefix(cast.ToString(exprV.Value), "%") {
+
+		}*/
 
 	case clause.Expr:
 		if len(exprV.SQL) == 0 ||

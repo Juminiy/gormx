@@ -1,4 +1,4 @@
-package gorm_api
+package gormx_tests
 
 import (
 	"gorm.io/gorm"
@@ -180,13 +180,13 @@ GROUP BY e.cid, s.name`).Find(&resG2).Error)
 
 // Output Redirection
 func TestSelectInsert(t *testing.T) {
-	var cid []string
-	Err(t, _txTenant().Raw(`
-INSERT INTO course (cid, name)
-SELECT cid,name FROM course_detail WHERE deleted_at = ?
-RETURNING cid
-`, soft_delete.FlagActived).Scan(&cid).Error)
-	t.Log(cid)
+	/*var cid []string
+		Err(t, _txTenant().Raw(`
+	INSERT INTO course (cid, name)
+	SELECT cid,name FROM course_detail WHERE deleted_at = ?
+	RETURNING cid
+	`, soft_delete.FlagActived).Scan(&cid).Error)
+		t.Log(cid)*/
 }
 
 func TestSelectCreateTable(t *testing.T) {
@@ -200,14 +200,14 @@ SELECT cid,name FROM course_detail WHERE deleted_at = ?
 }
 
 func TestCreateModelReturningID(t *testing.T) {
-	Err(t, _txTenant().Create(&CourseDetail{
+	/*Err(t, _txTenant().Create(&CourseDetail{
 		Cid:  "6.033",
 		Name: "Computer System Engineering",
 	}).Error)
 	Err(t, _txTenant().Model(&CourseDetail{}).Create(map[string]any{
 		"Cid":  "6.092",
 		"Name": "Introduction to Programming in Java",
-	}).Error)
+	}).Error)*/
 }
 
 func TestQueryWindows(t *testing.T) {

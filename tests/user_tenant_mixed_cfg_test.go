@@ -1,4 +1,4 @@
-package gorm_api
+package gormx_tests
 
 import (
 	"github.com/Juminiy/kube/pkg/util"
@@ -142,5 +142,5 @@ func TestQueryModelNeqDestList(t *testing.T) {
 }
 
 func txMixed() *gorm.DB {
-	return _txTenant().Set("user_id", "3")
+	return _txTenant().Set("user_id", "114514")
 }

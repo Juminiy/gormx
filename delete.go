@@ -27,5 +27,5 @@ func (cfg *Config) BeforeDelete(tx *gorm.DB) {
 		callback.DoQueryBeforeDelete(tx)
 	}
 
-	cfg.AddTenantClause(tx, false)
+	cfg.AddTenantClauses(tx, false)
 }

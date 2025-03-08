@@ -1,4 +1,4 @@
-package gorm_api
+package gormx_tests
 
 import (
 	"gorm.io/gorm"
@@ -16,6 +16,17 @@ var Create = func(t *testing.T, i any) {
 
 var Update = func(t *testing.T, model, dest any, conds ...any) {
 	Err(t, _txTenant().Model(model).Where(conds[0], conds[1:]...).Updates(dest).Error)
+}
+
+func TestUnique(t *testing.T) {
+	Err(t, txMigrate().AutoMigrate(
+		UniqueTest1{},
+		UniqueTest2{},
+		UniqueTest3{},
+		UniqueTest4{},
+		UniqueTest5{},
+		UniqueTest6{},
+	))
 }
 
 type UniqueTest1 struct {

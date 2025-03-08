@@ -1,4 +1,4 @@
-package gorm_api
+package gormx_tests
 
 import (
 	"encoding/json"
@@ -25,6 +25,7 @@ func init() {
 			NoLowerCase:         false,
 			IdentifierMaxLength: 255,
 		},
+		PrepareStmt: true,
 	})
 	util.Must(err)
 	util.Must(tx.Use(&clauses.Config{
@@ -36,7 +37,11 @@ func init() {
 	util.Must(tx.Use(&gormx.Config{
 		PluginName:  "gormx",
 		TagKey:      "mt",
-		KnownModels: []any{&Product{}, &AppUser{}, &Consumer{}, &CalicoWeave{}},
+		KnownModels: []any{&Product{}, &AppUser{}, &Consumer{}, &CalicoWeave{}, &BabyTrade{}},
+		KnownScopes: map[string]string{
+			"tenant": "tenant_id",
+			"user":   "user_id",
+		},
 	}))
 	tx.DB = tx.Debug()
 	_tx = tx

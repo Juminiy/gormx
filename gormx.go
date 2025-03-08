@@ -5,19 +5,22 @@ import (
 	"github.com/Juminiy/gormx/schemas"
 	"github.com/Juminiy/gormx/tenants"
 	"github.com/Juminiy/gormx/uniques"
+	"github.com/samber/lo"
+	expmaps "golang.org/x/exp/maps"
 	"gorm.io/gorm"
 )
 
 type Config struct {
-	PluginName  string // no default value, "" will be error, plugin will not be effect
-	TagKey      string // default: gormx
-	KnownModels []any  // must know your schemas(models, tables), or plugins will be folly
+	PluginName  string            // no default value, "" will be error, plugin will not be effect
+	TagKey      string            // default: gormx
+	KnownModels []any             // must know your schemas(models, tables), or plugins will be folly
+	KnownScopes map[string]string // must know your isolation scope (tenant,user) fieldTag -> txKey
 
 	*Option
 
 	schCfg *schemas.Config
-	tetCfg *tenants.Config
 	unqCfg *uniques.Config
+	tetCfg map[string]*tenants.Config
 }
 
 func (cfg *Config) Name() string {
@@ -38,19 +41,22 @@ func (cfg *Config) Initialize(tx *gorm.DB) error {
 		Name:   cfg.PluginName + ":schemas",
 		TagKey: cfg.TagKey,
 	}
-	cfg.tetCfg = &tenants.Config{
-		Name:         cfg.PluginName + ":tenants",
-		TagKey:       cfg.TagKey,
-		TagTenantKey: "tenant",
-		TxTenantKey:  "tenant_id",
-		TxTenantsKey: "tenant_ids",
-		TxSkipKey:    "skip_tenant",
-	}
-	cfg.unqCfg = &uniques.Config{
+	cfg.unqCfg = (&uniques.Config{
 		Name:         cfg.PluginName + ":uniques",
 		TagKey:       cfg.TagKey,
 		TagUniqueKey: "unique",
-	}
+		TxKeys:       expmaps.Values(cfg.KnownScopes),
+	}).Initial()
+	cfg.tetCfg = lo.MapValues(cfg.KnownScopes, func(txKey string, fieldTag string) *tenants.Config {
+		return &tenants.Config{
+			Name:         cfg.PluginName + "_scope:" + fieldTag,
+			TagKey:       cfg.TagKey,
+			TagTenantKey: fieldTag,
+			TxTenantKey:  txKey,
+			TxTenantsKey: txKey + "_list",
+			TxSkipKey:    "skip_" + txKey,
+		}
+	})
 
 	cfg.SchemasCfg().GraspSchema(tx, cfg.KnownModels...)
 	return plugins.OneError(

@@ -1,4 +1,4 @@
-package gorm_api
+package gormx_tests
 
 import (
 	"github.com/Juminiy/gormx/plugins"

@@ -1,4 +1,4 @@
-package gorm_api
+package gormx_tests
 
 import (
 	"gorm.io/gorm"
@@ -51,10 +51,14 @@ func TestBuiltinQueryCallbacks(t *testing.T) {
 
 // gorm:row -> callbacks.RowQuery
 func TestBuiltinRowCallbacks(t *testing.T) {
-	Err(t, txPure().Raw(`SELECT 1=1 AS TrueValue`).Scan(any(1)).Error)
+	Err(t, txPure().Raw(`SELECT 1=1 AS TrueValue`).Scan(new(int)).Error)
 }
 
 // gorm:raw -> callbacks.RawExec
 func TestBuiltinRawCallbacks(t *testing.T) {
-	Err(t, txPure().Exec(`SHOW DATABASES`).Error)
+	Err(t, txPure().Exec(`SELECT name FROM sqlite_master WHERE type='table'`).Error)
+
+	var tables []string
+	Err(t, txPure().Raw(`SELECT name FROM sqlite_master WHERE type='table'`).Scan(&tables).Error)
+	t.Log(Enc(tables))
 }

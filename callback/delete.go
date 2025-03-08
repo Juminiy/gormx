@@ -8,6 +8,7 @@ import (
 	"slices"
 )
 
+// TODO: need to fix QueryBeforeDelete
 func DoQueryBeforeDelete(tx *gorm.DB) {
 	ntx := tx.Session(&gorm.Session{NewDB: true})
 

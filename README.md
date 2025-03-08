@@ -10,11 +10,15 @@ Reinforced for gorm, aims to be best partner of gorm, rich plugins and toolkits 
 
 > 2025.03.06
 1. BUG report: uniques and tenants not consistency, because of tx session not clone current settings.
-   1. tenants setting eg. tenant_id in callbacks
-   2. hooks setting as well, eg. user_id in BeforeUpdate hooks
+   1. ✅(BugFix;2025.03.08) tenants setting eg. tenant_id in callbacks
+   2. ✅(BugFix;2025.03.08) hooks setting as well, eg. user_id in BeforeUpdate hooks
 2. Feature report: BeforeDelete Hooks with Array, Slice, Map
 3. Feature report: AfterFind Hooks with Find Map: map[string]any, *map[string]any, *[]map[string]any
-4. New Feature report: TenantID as a type do data isolation, can be overlapped: tenant_id, user_id, admin_id, operator_id, ...
+4. ✅(BugFix;2025.03.08) New Feature report: TenantID as a type do data isolation, can be overlapped: tenant_id, user_id, admin_id, operator_id, ...
 5. New Plugin: codegen for gin+gorm, fiber+gorm short for `CodeGenerator`
 6. New Plugin: optlock short for `OptimisticLock`
 7. Feature report: new type in tenants.ID, tenants.HideID
+
+> 2025.03.08
+1. Feature report: complex dup check before count do self check for group mode, >=2 rows needed, one row do not need.
+2. BugFix: build primaryKey clause with multiple Pk clause.

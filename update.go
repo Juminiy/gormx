@@ -19,20 +19,20 @@ func (cfg *Config) BeforeUpdate(tx *gorm.DB) {
 		}
 	}
 
-	if sCfg.UpdateMapSetPkToClause {
-		callback.BeforeUpdateMapDeletePkAndSetPkToClause(tx)
+	if sCfg.UpdateMapOmitUnknownKey {
+		callback.BeforeUpdateMapDeleteUnknownColumn(tx)
 	}
 
 	if sCfg.UpdateMapOmitZeroElemKey {
 		callback.BeforeUpdateMapDeleteZeroValueColumn(tx)
 	}
 
-	if sCfg.UpdateMapOmitUnknownKey {
-		callback.BeforeUpdateMapDeleteUnknownColumn(tx)
+	if sCfg.UpdateMapSetPkToClause {
+		callback.BeforeUpdateMapDeletePkAndSetPkToClause(tx)
 	}
 
 	if !sCfg.DisableFieldDup {
-		cfg.UniquesCfg().FieldDupCheck(tx, true, sCfg.EnableComplexFieldDup)
+		cfg.UniquesCfg().FieldDupCheck(tx, true, false)
 		if tx.Error != nil {
 			return
 		}
@@ -42,5 +42,5 @@ func (cfg *Config) BeforeUpdate(tx *gorm.DB) {
 		callback.BeforeUpdateMapCallHook(tx)
 	}
 
-	cfg.AddTenantClause(tx, false)
+	cfg.AddTenantClauses(tx, false)
 }

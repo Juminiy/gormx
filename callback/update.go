@@ -4,7 +4,9 @@ import (
 	"github.com/Juminiy/gormx/clauses"
 	"github.com/Juminiy/gormx/deps"
 	"github.com/Juminiy/kube/pkg/util"
+	"github.com/samber/lo"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"gorm.io/gorm/schema"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"maps"
@@ -112,4 +114,35 @@ func AfterUpdateMapCallHook(db *gorm.DB) {
 			return false
 		})*/
 	}
+}
+
+func BeforeUpdateGetClausePk(modelRv reflect.Value, stmt *gorm.Statement) (clausePk clause.Expression, oks bool) {
+	clauseList := make([]clause.Interface, 0, 4)
+	if sch := stmt.Schema; sch != nil {
+		if modelRv.IsValid() && modelRv.Kind() == reflect.Struct {
+			slices.All(sch.PrimaryFields)(func(_ int, field *schema.Field) bool {
+				if value, isZero := field.ValueOf(stmt.Context, modelRv); !isZero {
+					clauseList = append(clauseList, clauses.ClauseFieldEq(field, value))
+				}
+				return true
+			})
+		} else if modelRv.Kind() == reflect.Map {
+			mapValue := deps.Ind(stmt.ReflectValue).MapValues()
+			slices.All(sch.PrimaryFields)(func(_ int, pF *schema.Field) bool {
+				if mapElem, ok := util.MapElemOk(mapValue, pF.DBName); ok {
+					mapElemRv := reflect.ValueOf(mapElem)
+					if mapElemRv.IsValid() && !mapElemRv.IsZero() {
+						clauseList = append(clauseList, clauses.ClauseFieldEq(pF, mapElem))
+					}
+				}
+				return true
+			})
+		}
+	}
+	if len(clauseList) > 0 {
+		return clause.And(lo.Map(clauseList, func(item clause.Interface, _ int) clause.Expression {
+			return clause.Expression(item)
+		})...), true
+	}
+	return clausePk, false
 }

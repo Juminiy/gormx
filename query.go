@@ -3,6 +3,7 @@ package gormx
 import (
 	"github.com/Juminiy/gormx/callback"
 	"github.com/Juminiy/gormx/deps"
+	"github.com/Juminiy/gormx/tenants"
 	"gorm.io/gorm"
 )
 
@@ -14,7 +15,7 @@ func (cfg *Config) BeforeQuery(tx *gorm.DB) {
 		callback.BeforeQueryOmit(tx)
 	}
 
-	cfg.AddTenantClause(tx, true)
+	cfg.AddTenantClauses(tx, true)
 }
 
 func (cfg *Config) AfterQuery(tx *gorm.DB) {
@@ -28,10 +29,11 @@ func (cfg *Config) AfterQuery(tx *gorm.DB) {
 	}
 
 	if !sCfg.AfterQueryShowTenant {
-		if tInfo := cfg.TenantsCfg().TenantInfo(tx); tInfo != nil {
+		cfg.TenantsSeq(tx)(func(tenant *tenants.Tenant) bool {
 			deps.Ind(tx.Statement.ReflectValue).SetField(map[string]any{
-				tInfo.Field.Name: nil, // FieldName
+				tenant.Field.Name: nil, // FieldName
 			})
-		}
+			return true
+		})
 	}
 }

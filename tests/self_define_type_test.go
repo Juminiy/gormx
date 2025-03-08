@@ -1,4 +1,4 @@
-package gorm_api
+package gormx_tests
 
 import (
 	"database/sql"
@@ -26,10 +26,6 @@ func (n *Name) UnmarshalJSON(b []byte) error {
 }
 
 func TestMagicType(t *testing.T) {
-	n := Name("null")
-	bs, err := json.Marshal(n)
-	Err(t, err)
-	t.Logf("%s", bs)
 }
 
 func TestTimeAlias(t *testing.T) {

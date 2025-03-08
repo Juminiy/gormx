@@ -3,6 +3,7 @@ package gormx
 import (
 	"github.com/Juminiy/gormx/callback"
 	"github.com/Juminiy/gormx/deps"
+	"github.com/Juminiy/gormx/tenants"
 	"gorm.io/gorm"
 )
 
@@ -25,11 +26,12 @@ func (cfg *Config) BeforeCreate(tx *gorm.DB) {
 
 	callback.BeforeCreateSetDefaultValuesToMap(tx)
 
-	if tInfo := cfg.TenantsCfg().TenantInfo(tx); tInfo != nil {
+	cfg.TenantsSeq(tx)(func(tenant *tenants.Tenant) bool {
 		deps.Ind(tx.Statement.ReflectValue).SetField(map[string]any{
-			tInfo.Field.Name: tInfo.Field.Value, // FieldName
+			tenant.Field.Name: tenant.Field.Value, // FieldName
 		})
-	}
+		return true
+	})
 }
 
 func (cfg *Config) AfterCreate(tx *gorm.DB) {
@@ -45,10 +47,11 @@ func (cfg *Config) AfterCreate(tx *gorm.DB) {
 	}
 
 	if !sCfg.AfterCreateShowTenant {
-		if tInfo := cfg.TenantsCfg().TenantInfo(tx); tInfo != nil {
+		cfg.TenantsSeq(tx)(func(tenant *tenants.Tenant) bool {
 			deps.Ind(tx.Statement.ReflectValue).SetField(map[string]any{
-				tInfo.Field.Name: nil, // FieldName
+				tenant.Field.Name: nil, // FieldName
 			})
-		}
+			return true
+		})
 	}
 }

@@ -1,4 +1,4 @@
-package gorm_api
+package gormx_tests
 
 import (
 	"github.com/Juminiy/gormx"
@@ -13,9 +13,10 @@ import (
 
 func txFull() *gorm.DB {
 	return txPure().
-		Set("tenant_id", 1919810).
-		Set("tenant_ids", []uint{1919810, 1, 2, 3}).
+		Set("tenant_id", 114514).
+		Set("tenant_id_list", []uint{114514, 1, 2, 3}).
 		Set("user_id", 114514).
+		Set("user_id_list", []uint{114514, 1, 2, 3}).
 		Set(gormx.OptionKey, gormx.Option{
 			DisableFieldDup:          false,
 			EnableComplexFieldDup:    true,
@@ -93,7 +94,7 @@ func TestInitFullFeatureTable(t *testing.T) {
 func TestCreateWithTenantUserDefaultValue(t *testing.T) {
 	cw0 := CalicoWeave{
 		Name:      "sandbox-1",
-		LocID:     rand.Uint(),
+		LocID:     rand.UintN(10),
 		AppID:     rand.UintN(128),
 		AppMe:     gofakeit.Name(),
 		AppYr:     gofakeit.Hobby(),
@@ -190,4 +191,14 @@ func TestUpdateFieldDup(t *testing.T) {
 			"app_me":    "which-is-my-handsome", // dupGroup["app"] and Set to
 			"app_yr":    "my-bingo-done",        // dupGroup["app"] and Set to
 		}).Error)
+}
+
+func TestQueryModelCount(t *testing.T) {
+	var cnt int64
+	Err(t, txFull().Model(CalicoWeave{Model: gorm.Model{ID: 3}}).Count(&cnt).Error)
+	t.Log(cnt)
+
+	Err(t, txFull().
+		Select("Desc").
+		Updates(&CalicoWeave{Model: gorm.Model{ID: 3}, Name: "sandbox-o1"}).Error)
 }

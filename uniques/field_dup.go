@@ -15,11 +15,17 @@ import (
 )
 
 type Config struct {
-	Name         string // default: gormx:dup
-	TagKey       string // default: gormx
-	TagUniqueKey string // default: unique
+	Name         string   // default: gormx:dup
+	TagKey       string   // default: gormx
+	TagUniqueKey string   // default: unique
+	TxKeys       []string // txKey: elem of gormx.Config .KnownScopes
 
 	cacheStore *sync.Map
+}
+
+func (cfg *Config) Initial() *Config {
+	cfg.cacheStore = new(sync.Map)
+	return cfg
 }
 
 type FieldDup struct {
@@ -28,6 +34,8 @@ type FieldDup struct {
 	FieldColumn map[string]string
 	ColumnField map[string]string
 	Groups      map[string][]string // Groups[key] -> FieldGroup
+
+	cfg *Config
 }
 
 // FieldDupInfo
@@ -38,6 +46,20 @@ type FieldDup struct {
 // Updates(&map[string]any{})
 // Updates map[string]any ~ Map[K]V, K(string) is ColumnName, V(any) is FieldValue
 func (cfg *Config) FieldDupInfo(tx *gorm.DB) *FieldDup {
+	if sch := tx.Statement.Schema; sch != nil {
+		schFieldDupKey := util.StringJoin(":", cfg.Name, cfg.TagUniqueKey, sch.Table)
+		if fieldDup, ok := cfg.cacheStore.Load(schFieldDupKey); ok {
+			return fieldDup.(*FieldDup)
+		} else if fieldDup := cfg.fieldDupInfo(tx); fieldDup != nil {
+			fieldDup.cfg = cfg
+			cfg.cacheStore.Store(schFieldDupKey, fieldDup)
+			return fieldDup
+		}
+	}
+	return nil
+}
+
+func (cfg *Config) fieldDupInfo(tx *gorm.DB) *FieldDup {
 	sch := tx.Statement.Schema
 	if sch == nil {
 		return nil
@@ -124,12 +146,14 @@ func (d *FieldDup) Update(tx *gorm.DB) {
 		(&rowValues{
 			ColumnValue: columnValue,
 			FieldDup:    d,
+			ForUpdate:   true,
 		}).simple(tx)
 
 	case *map[string]any:
 		(&rowValues{
 			ColumnValue: *columnValue,
 			FieldDup:    d,
+			ForUpdate:   true,
 		}).simple(tx)
 
 	default:
@@ -139,12 +163,14 @@ func (d *FieldDup) Update(tx *gorm.DB) {
 			(&rowValues{
 				FieldValue: rval.StructValues(),
 				FieldDup:   d,
+				ForUpdate:  true,
 			}).simple(tx)
 
 		case reflect.Map:
 			(&rowValues{
 				ColumnValue: rval.MapValues(),
 				FieldDup:    d,
+				ForUpdate:   true,
 			}).simple(tx)
 
 		default: // ignore case
@@ -152,12 +178,21 @@ func (d *FieldDup) Update(tx *gorm.DB) {
 	}
 }
 
-func (d *FieldDup) doCount(tx *gorm.DB, orExpr clause.Expression) {
+func (d *FieldDup) doCount(tx *gorm.DB, orExpr clause.Expression, forUpdate bool) {
+	// new session and copy settings
 	ntx := tx.Session(&gorm.Session{NewDB: true, SkipHooks: true})
+	tx.Statement.Settings.Range(func(key, value any) bool {
+		if keyStr, ok := key.(string); ok && prefixOrSuffixIn(keyStr, d.cfg.TxKeys...) {
+			ntx = ntx.Set(keyStr, value)
+		}
+		return true
+	})
+	ntx.Statement.Schema = tx.Statement.Schema
+
+	/*callback.SkipQuery.Set(ntx).*/
 
 	// where clause 1. orExpr
-	ntx = callback.SkipQuery.Set(ntx).
-		Table(d.DBTable).Where(orExpr)
+	ntx = ntx.Table(d.DBTable).Where(orExpr)
 
 	// where clause 2. tenant_id, user_id, ...
 	// where clause 3. soft_delete
@@ -168,9 +203,18 @@ func (d *FieldDup) doCount(tx *gorm.DB, orExpr clause.Expression) {
 	})
 
 	// where clause for update 4. NOT(tx.Clause)
+	var exprs []clause.Expression
+	if forUpdate {
+		if expr, ok := callback.BeforeUpdateGetClausePk(tx.Statement.ReflectValue, tx.Statement); ok {
+			exprs = append(exprs, expr)
+		}
+	}
 	if txClause, ok := clauses.WhereClause(tx); ok {
+		exprs = append(exprs, txClause)
+	}
+	if len(exprs) > 0 {
 		ntx.Statement.AddClause(clause.Where{
-			Exprs: []clause.Expression{clause.Not(txClause)},
+			Exprs: []clause.Expression{clause.Not(append(exprs, clause.Expression(clauses.TrueExpr()))...)},
 		})
 	}
 
@@ -178,7 +222,7 @@ func (d *FieldDup) doCount(tx *gorm.DB, orExpr clause.Expression) {
 	var cnt int64
 	err := ntx.Count(&cnt).Error
 	if err != nil {
-		tx.Logger.Error(tx.Statement.Context, "before create or update, do field duplicated check, error: %s", err.Error())
+		ntx.Logger.Error(ntx.Statement.Context, "before create or update, do field duplicated check, error: %s", err.Error())
 		return
 	}
 	if cnt > 0 {
@@ -192,4 +236,15 @@ func (d *FieldDup) doCount(tx *gorm.DB, orExpr clause.Expression) {
 		}*/
 		_ = tx.AddError(fdErr)
 	}
+}
+
+func prefixOrSuffixIn(s string, keys ...string) (prefixOrSuffix bool) {
+	slices.All(keys)(func(_ int, key string) bool {
+		if strings.HasPrefix(s, key) || strings.HasSuffix(s, key) {
+			prefixOrSuffix = true
+			return false
+		}
+		return true
+	})
+	return
 }
