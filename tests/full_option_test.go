@@ -3,10 +3,14 @@ package gormx_tests
 import (
 	"encoding/csv"
 	"github.com/Juminiy/gormx"
+	"github.com/Juminiy/gormx/plugins"
 	"github.com/Juminiy/kube/pkg/util"
+	"github.com/brianvoe/gofakeit/v7"
 	"github.com/google/uuid"
 	"github.com/samber/lo"
 	"github.com/spf13/cast"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"gorm.io/plugin/soft_delete"
 	"math/rand/v2"
 	"os"
@@ -14,27 +18,139 @@ import (
 	"time"
 )
 
+func doInit() {
+	var modelList = []any{&BabyTrade{}, &Consumer{}, &Product{}, &CalicoWeave{}, &AppUser{}}
+
+	iSqlite().Plugins["gormx"].(*gormx.Config).
+		SchemasCfg().
+		GraspSchema(iSqlite(), modelList...)
+
+	iMySQL().Plugins["gormx"].(*gormx.Config).
+		SchemasCfg().
+		GraspSchema(iMySQL(), modelList)
+
+	iPg().Plugins["gormx"].(*gormx.Config).
+		SchemasCfg().
+		GraspSchema(iPg(), modelList)
+
+	util.Must(plugins.OneError(
+		txMigrate(iSqlite()).AutoMigrate(modelList...),
+		txMigrate(iMySQL()).AutoMigrate(modelList...),
+		txMigrate(iPg()).AutoMigrate(modelList...),
+	))
+}
+
+func TestInit(t *testing.T) {
+	//doInit()
+}
+
 type BabyTrade struct {
 	CreateTime time.Time `gorm:"autoCreateTime"`
 	UpdateTime time.Time `gorm:"autoUpdateTime"`
 	soft_delete.DeletedAt
 	ID        uint   `gorm:"primaryKey;autoIncrement"`
-	SimUUID   string `gorm:"primaryKey"`
+	SimUUID   string `gorm:"primaryKey" mt:"unique"`
 	UserID    uint   `mt:"user"`
 	TenantID  uint   `mt:"tenant"`
-	AuctionID uint   `mt:"unique"`
-	CatID     uint   `mt:"unique"`
-	Cat       int
-	BuyMount  int
-	Day       string
+	AuctionID uint   `mt:"unique:auc_cat"`
+	CatID     uint   `mt:"unique:auc_cat,cat"`
+	Cat       int    `mt:"unique:cat"`
+	BuyMount  int    `gorm:"->:false;<-"` // query omit
+	Day       string `gorm:"default:2024-02-05"`
 }
 
-func TestInit2(t *testing.T) {
-	Err(t, txMigrate().AutoMigrate(BabyTrade{}))
+func (t *BabyTrade) BeforeCreate(tx *gorm.DB) error {
+	t.BuyMount = 666666
+	tx.Logger.Info(tx.Statement.Context, "you are in before create hooks")
+	return nil
+}
+
+func (t *BabyTrade) AfterCreate(tx *gorm.DB) error {
+	t.BuyMount = 88888888
+	tx.Logger.Info(tx.Statement.Context, "you are in after create hooks")
+	return nil
+}
+
+func (t *BabyTrade) BeforeUpdate(tx *gorm.DB) error {
+	t.BuyMount = 666666
+	tx.Logger.Info(tx.Statement.Context, "you are in before update hooks")
+	return nil
+}
+
+func (t *BabyTrade) AfterUpdate(tx *gorm.DB) error {
+	t.BuyMount = 88888888
+	tx.Logger.Info(tx.Statement.Context, "you are in after update hooks")
+	return nil
+}
+
+func (t *BabyTrade) BeforeDelete(tx *gorm.DB) error {
+	t.BuyMount = 666666
+	tx.Logger.Info(tx.Statement.Context, "you are in before delete hooks")
+	return nil
+}
+
+func (t *BabyTrade) AfterDelete(tx *gorm.DB) error {
+	t.BuyMount = 88888888
+	tx.Logger.Info(tx.Statement.Context, "you are in after delete hooks")
+	return nil
+}
+
+func (t *BabyTrade) AfterFind(tx *gorm.DB) error {
+	t.BuyMount = 88888888
+	tx.Logger.Info(tx.Statement.Context, "you are in after find hooks")
+	return nil
+}
+
+func (t *BabyTrade) RandomSet() *BabyTrade {
+	t.SimUUID = uuid.NewString()
+	t.AuctionID = rand.UintN(1 << 10)
+	t.CatID = rand.UintN(1 << 4)
+	t.Cat = rand.IntN(2)
+	t.BuyMount = rand.IntN(1 << 16)
+	t.Day = gofakeit.Date().String()
+	return t
+}
+
+func (t *BabyTrade) HardCodeSet() *BabyTrade {
+	t.SimUUID = _HardCodeSim
+	t.AuctionID = 888
+	t.CatID = 888888
+	t.Cat = 6
+	t.BuyMount = 666
+	t.Day = gofakeit.Date().String()
+	return t
+}
+
+func BabyTradeMapRandom() map[string]any {
+	return map[string]any{
+		"SimUUID":   uuid.NewString(),
+		"AuctionID": rand.UintN(1 << 10),
+		"CatID":     rand.UintN(1 << 9),
+		"Cat":       rand.IntN(1 << 8),
+		"BuyMount":  rand.IntN(1 << 12),
+		"Day":       gofakeit.Date().String(),
+	}
+}
+
+func BabyTradeMapHardCode() map[string]any {
+	return map[string]any{
+		"SimUUID":   _HardCodeSim,
+		"AuctionID": 888,
+		"CatID":     888888,
+		"Cat":       6,
+		"BuyMount":  666,
+		"Day":       gofakeit.Date().String(),
+	}
+}
+
+var _HardCodeSim = uuid.NewString()
+
+func TestInitBabyTrade(t *testing.T) {
+	Err(t, txMigrate().AutoMigrate(&BabyTrade{}))
 }
 
 func Test2(t *testing.T) {
-	csvFile, err := os.Open("testdata/baby_trade_copy_202503082022.csv")
+	csvFile, err := os.Open("testdata/baby_trade.csv")
 	if err != nil {
 		t.Error(err)
 	}
@@ -59,19 +175,19 @@ func Test2(t *testing.T) {
 var sessionOpt = gormx.Option{
 	DisableFieldDup:          false, // ✅
 	EnableComplexFieldDup:    false, // ✅
-	AllowTenantGlobalDelete:  false, // todo: simple-test
+	AllowTenantGlobalDelete:  false, // ✅
 	BeforeDeleteDoQuery:      false, // todo: bugfix
-	AllowTenantGlobalUpdate:  false, // todo: simple-test
+	AllowTenantGlobalUpdate:  false, // ✅
 	UpdateMapOmitZeroElemKey: false, // ✅
 	UpdateMapOmitUnknownKey:  false, // ✅
 	UpdateMapSetPkToClause:   false, // ✅
-	AfterCreateShowTenant:    false,
-	BeforeQueryOmitField:     false,
-	AfterQueryShowTenant:     false,
-	BeforeCreateMapCallHooks: false,
-	AfterCreateMapCallHooks:  false,
-	UpdateMapCallHooks:       false,
-	AfterFindMapCallHooks:    false,
+	AfterCreateShowTenant:    false, // ✅
+	BeforeQueryOmitField:     false, // ✅
+	AfterQueryShowTenant:     false, // ✅
+	BeforeCreateMapCallHooks: false, // ✅
+	AfterCreateMapCallHooks:  false, // ✅
+	UpdateMapCallHooks:       false, // ✅
+	AfterFindMapCallHooks:    false, // todo: bugfix
 }
 
 func TestNoTenant(t *testing.T) {
@@ -138,4 +254,136 @@ func TestUpdateMapMixedStruct(t *testing.T) {
 			//"zero_id":     0,                                      // unknown,zero
 			//"zero_id_str": "", // unknown,zero
 		}).Error)
+}
+
+func txScope() *gorm.DB {
+	return txPure().
+		Set("user_id", 114514).
+		Set("tenant_id", 114514).
+		Set(gormx.OptionKey, gormx.Option{
+			DisableFieldDup:          false,
+			EnableComplexFieldDup:    true,
+			AfterCreateShowTenant:    true,
+			BeforeCreateMapCallHooks: true,
+			AfterCreateMapCallHooks:  true,
+			UpdateMapSetPkToClause:   true,
+			UpdateMapCallHooks:       true,
+		})
+}
+
+func TestCreateOrFindShowTenantOption(t *testing.T) {
+	createBt := BabyTrade{
+		SimUUID:   uuid.NewString(),
+		AuctionID: rand.UintN(1 << 10),
+		CatID:     rand.UintN(1 << 4),
+		Cat:       rand.IntN(2),
+		BuyMount:  rand.IntN(1 << 16),
+		Day:       gofakeit.Date().String(),
+	}
+	Err(t, txScope().Create(&createBt).Error)
+	t.Log(Enc(createBt))
+
+	findBt := BabyTrade{ID: createBt.ID}
+	Err(t, txScope().First(&findBt).Error)
+	t.Log(Enc(findBt))
+}
+
+func TestUpdateDeleteScope(t *testing.T) {
+	Err(t, txScope().
+		Table(`tbl_baby_trade`).
+		Update("cat_id", rand.UintN(1<<8)).Error)
+
+	Err(t, txScope().Delete(&BabyTrade{}).Error)
+}
+
+func TestFieldDupOneStruct(t *testing.T) {
+	// no scope
+	Err(t, txPure().Create((&BabyTrade{}).RandomSet()).Error)
+
+	// one scope
+	Err(t, txPure().Set("user_id", 114514).
+		Create((&BabyTrade{}).RandomSet()).Error)
+
+	// two scope
+	Err(t, txPure().Set("user_id", 114514).
+		Set("tenant_id", 114514).
+		Create((&BabyTrade{}).RandomSet()).Error)
+}
+
+func TestFieldDupOneMap(t *testing.T) {
+	// no scope
+	Err(t, txPure().Table(`tbl_baby_trade`).Create(BabyTradeMapRandom()).Error)
+
+	// one scope
+	Err(t, txPure().Set("user_id", 114514).
+		Table(`tbl_baby_trade`).Create(BabyTradeMapRandom()).Error)
+
+	// two scope
+	Err(t, txPure().Set("user_id", 114514).
+		Set("tenant_id", 114514).
+		Table(`tbl_baby_trade`).Create(BabyTradeMapRandom()).Error)
+}
+
+func complexFieldDupOpt() *gorm.DB {
+	return txPure().Set(gormx.OptionKey, gormx.Option{
+		DisableFieldDup:          false,
+		EnableComplexFieldDup:    true,
+		BeforeCreateMapCallHooks: true,
+		AfterCreateMapCallHooks:  true,
+	})
+}
+
+func TestGormNotSupportType(t *testing.T) {
+	// panic: sql: Scan error on column index 0,
+	//name "id": unsupported Scan,
+	//storing driver.Value type int64 into type *gormx_tests.BabyTrade;
+	//sql: Scan error on column index 0, name "id": unsupported Scan,
+	//storing driver.Value type int64 into type *gormx_tests.BabyTrade [recovered]
+	/*var structList = &[]**BabyTrade{
+		util.New((&BabyTrade{}).Set()),
+		util.New((&BabyTrade{}).Set()),
+	}
+	Err(t, complexFieldDupOpt().Create(&structList).Error)
+	t.Log(Enc(structList))*/
+}
+
+func TestFieldDupStructList(t *testing.T) {
+	var structList = &[]*BabyTrade{
+		(&BabyTrade{}).HardCodeSet(),
+		(&BabyTrade{}).HardCodeSet(),
+	}
+	var slPtr = util.New2(structList)
+	Err(t, complexFieldDupOpt().Create(&slPtr).Error)
+	t.Log(Enc(structList))
+}
+
+func TestFieldDupMapList(t *testing.T) {
+	var mapList = []map[string]any{
+		BabyTradeMapHardCode(),
+		BabyTradeMapHardCode(),
+	}
+	Err(t, complexFieldDupOpt().Table(`tbl_baby_trade`).Create(&mapList).Error)
+	t.Log(Enc(mapList))
+}
+
+func TestFieldDupWithTenantsCreateMapCallHooks(t *testing.T) {
+	var mapList = []map[string]any{
+		BabyTradeMapRandom(),
+		BabyTradeMapRandom(),
+	}
+	Err(t, txScope().Table(`tbl_baby_trade`).Create(&mapList).Error)
+	t.Log(Enc(mapList))
+}
+
+func TestUpdateMapCallHooks(t *testing.T) {
+	Err(t, txScope().Table(`tbl_baby_trade`).Updates(map[string]any{
+		"id":         2,
+		"auction_id": 10,
+	}).Error)
+}
+
+func TestDeleteMapCallHooks(t *testing.T) {
+	var deleteBt BabyTrade
+	Err(t, txScope().Clauses(clause.Returning{}).Delete(&deleteBt, 21).Error)
+	t.Log(Enc(deleteBt))
 }

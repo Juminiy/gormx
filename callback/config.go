@@ -27,3 +27,6 @@ var SkipUpdate = _Cfg{
 var SkipQuery = _Cfg{
 	key: "internal:skip_query_callback",
 }
+var SkipRawRow = _Cfg{
+	key: "internal:skip_raw_row_callback",
+}

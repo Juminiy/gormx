@@ -10,8 +10,9 @@ import (
 type Config struct {
 	PluginName string
 
-	AllowWriteClauseToRawOrRow    bool // effect on raw and row where clause, suggest to Wrap sql by: SELECT * FROM (your sql string)
-	CheckAndOmitNotExistingColumn bool // effect on clause.OrderBy, clause.OrderByColumn
+	WriteClauseToRawOrRow  bool // effect on raw and row where clause, will append where, order by, limit offset to your sql
+	CheckOrderByClause     bool // effect on clause.OrderBy, clause.OrderByColumn
+	ExecuteReturningClause bool // effect on not support returning clause db driver
 
 	BeforePlugins []string
 	AfterPlugins  []string
@@ -42,13 +43,13 @@ func (cfg *Config) Initialize(tx *gorm.DB) error {
 		if util.MapOk(tx.Plugins, s) {
 			hasBefore = true
 			registerBeforeErr = plugins.OneError(
-				tx.Callback().Delete().
+				/*tx.Callback().Delete().
 					Before(plugins.CallbackName(s, true, 'D')).
 					Register(plugins.CallbackName(cfg.PluginName, true, 'D'), cfg.Clause),
 
 				tx.Callback().Update().
 					Before(plugins.CallbackName(s, true, 'U')).
-					Register(plugins.CallbackName(cfg.PluginName, true, 'U'), cfg.Clause),
+					Register(plugins.CallbackName(cfg.PluginName, true, 'U'), cfg.Clause),*/
 
 				tx.Callback().Query().
 					Before(plugins.CallbackName(s, true, 'Q')).
@@ -65,15 +66,13 @@ func (cfg *Config) Initialize(tx *gorm.DB) error {
 	}
 
 	return plugins.OneError(
-		tx.Callback().Delete().Before("gorm:delete").
+		/*tx.Callback().Delete().Before("gorm:delete").
 			Register(plugins.CallbackName(cfg.PluginName, true, 'D'), cfg.Clause),
 
 		tx.Callback().Update().Before("gorm:update").
-			Register(plugins.CallbackName(cfg.PluginName, true, 'U'), cfg.Clause),
+			Register(plugins.CallbackName(cfg.PluginName, true, 'U'), cfg.Clause),*/
 
 		tx.Callback().Query().Before("gorm:query").
 			Register(plugins.CallbackName(cfg.PluginName, true, 'Q'), cfg.Clause),
 	)
 }
-
-const SkipRawOrRow = "skip_raw_row"

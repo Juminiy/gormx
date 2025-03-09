@@ -1,8 +1,7 @@
 package gormx_tests
 
 import (
-	"github.com/Juminiy/gormx/clauses"
-	"github.com/Juminiy/kube/pkg/util"
+	"github.com/Juminiy/gormx/callback"
 	expmaps "golang.org/x/exp/maps"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
@@ -21,7 +20,7 @@ type Product struct {
 }
 
 func TestCreateProduct(t *testing.T) {
-	util.Must(txMigrate().AutoMigrate(&Product{}))
+	Err(t, txMigrate().AutoMigrate(&Product{}))
 }
 
 type InnerType struct {
@@ -65,7 +64,7 @@ func showSchema(schema *schema.Schema) string {
 }
 
 func TestSchema(t *testing.T) {
-	util.Must(txMigrate().AutoMigrate(&WrapType1{}, &WrapType2{}, &WrapType3{}))
+	Err(t, txMigrate().AutoMigrate(&WrapType1{}, &WrapType2{}, &WrapType3{}))
 	for _, ttx := range []*gorm.DB{
 		_txTenant().Find(&WrapType1{}),
 		_txTenant().Find(&WrapType2{}),
@@ -74,6 +73,10 @@ func TestSchema(t *testing.T) {
 	}
 }
 
-func txMigrate() *gorm.DB {
-	return _tx.Set(clauses.SkipRawOrRow, struct{}{})
+func txMigrate(tx ...*gorm.DB) *gorm.DB {
+	txn := iSqlite()
+	if len(tx) > 0 {
+		txn = tx[0]
+	}
+	return callback.SkipRawRow.Set(txn)
 }

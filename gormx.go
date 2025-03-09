@@ -14,7 +14,7 @@ type Config struct {
 	PluginName  string            // no default value, "" will be error, plugin will not be effect
 	TagKey      string            // default: gormx
 	KnownModels []any             // must know your schemas(models, tables), or plugins will be folly
-	KnownScopes map[string]string // must know your isolation scope (tenant,user) fieldTag -> txKey
+	KnownScopes map[string]string // must know your isolation scope (tenant,user) fieldTag -> txKey, or plugins will do nothing on scopes
 
 	*Option
 
@@ -85,21 +85,22 @@ func (cfg *Config) Initialize(tx *gorm.DB) error {
 type Option struct {
 	DisableFieldDup          bool // effect on create and update
 	EnableComplexFieldDup    bool // effect on create
-	AllowTenantGlobalDelete  bool // effect on delete, if false: raise error when clause only have (tenant) and (soft_delete)
-	BeforeDeleteDoQuery      bool // effect on delete, use with clause.Returning, when database not support Returning
+	AfterCreateShowTenant    bool // effect on create
+	BeforeCreateMapCallHooks bool // effect on before create map
+	AfterCreateMapCallHooks  bool // effect on after create map, it's a low efficiency option, not to open it unless strong need
+
+	AllowTenantGlobalDelete bool // effect on delete, if false: raise error when clause only have (tenant) and (soft_delete)
+	BeforeDeleteDoQuery     bool // effect on delete, use with clause.Returning, when database not support Returning
+
 	AllowTenantGlobalUpdate  bool // effect on update, if false: raise error when clause only have (tenant) and (soft_delete)
 	UpdateMapOmitZeroElemKey bool // effect on update
 	UpdateMapOmitUnknownKey  bool // effect on update
 	UpdateMapSetPkToClause   bool // effect on update
-	AfterCreateShowTenant    bool // effect on create
-	BeforeQueryOmitField     bool // effect on query, use with tag `gorm:"->:false"`
-	AfterQueryShowTenant     bool // effect on query
-
-	// callbacks Hooks
-	BeforeCreateMapCallHooks bool // effect on before create map
-	AfterCreateMapCallHooks  bool // effect on after create map, it's a low efficiency option, not to open it unless strong need
 	UpdateMapCallHooks       bool // effect on update map
-	AfterFindMapCallHooks    bool // effect on find map
+
+	BeforeQueryOmitField  bool // effect on query, use with tag `gorm:"->:false"`
+	AfterQueryShowTenant  bool // effect on query
+	AfterFindMapCallHooks bool // effect on find map
 }
 
 const OptionKey = "session:option_config"

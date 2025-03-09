@@ -3,8 +3,10 @@ package uniques
 import (
 	"github.com/Juminiy/gormx/callback"
 	"github.com/Juminiy/gormx/clauses"
+	"github.com/Juminiy/gormx/clauses/clauseslite"
 	"github.com/Juminiy/gormx/deps"
 	"github.com/Juminiy/kube/pkg/util"
+	expmaps "golang.org/x/exp/maps"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"gorm.io/gorm/schema"
@@ -33,7 +35,7 @@ type FieldDup struct {
 	DBTable     string
 	FieldColumn map[string]string
 	ColumnField map[string]string
-	Groups      map[string][]string // Groups[key] -> FieldGroup
+	Groups      map[string][]string // Groups[group_name] -> FieldList
 
 	cfg *Config
 }
@@ -179,11 +181,16 @@ func (d *FieldDup) Update(tx *gorm.DB) {
 }
 
 func (d *FieldDup) doCount(tx *gorm.DB, orExpr clause.Expression, forUpdate bool) {
+	var scopeKeys []string
 	// new session and copy settings
 	ntx := tx.Session(&gorm.Session{NewDB: true, SkipHooks: true})
+	// where clause 1. scopes: tenant_id, user_id, project_id, ...
 	tx.Statement.Settings.Range(func(key, value any) bool {
-		if keyStr, ok := key.(string); ok && prefixOrSuffixIn(keyStr, d.cfg.TxKeys...) {
-			ntx = ntx.Set(keyStr, value)
+		if keyStr, ok := key.(string); ok {
+			if scopeKey, ok := prefixOrSuffixIn(keyStr, d.cfg.TxKeys...); ok {
+				scopeKeys = append(scopeKeys, scopeKey)
+				ntx = ntx.Set(keyStr, value)
+			}
 		}
 		return true
 	})
@@ -191,10 +198,9 @@ func (d *FieldDup) doCount(tx *gorm.DB, orExpr clause.Expression, forUpdate bool
 
 	/*callback.SkipQuery.Set(ntx).*/
 
-	// where clause 1. orExpr
+	// where clause 2. orExpr
 	ntx = ntx.Table(d.DBTable).Where(orExpr)
 
-	// where clause 2. tenant_id, user_id, ...
 	// where clause 3. soft_delete
 	// and other clauses
 	slices.All(d.Clauses)(func(_ int, c clause.Interface) bool {
@@ -214,7 +220,7 @@ func (d *FieldDup) doCount(tx *gorm.DB, orExpr clause.Expression, forUpdate bool
 	}
 	if len(exprs) > 0 {
 		ntx.Statement.AddClause(clause.Where{
-			Exprs: []clause.Expression{clause.Not(append(exprs, clause.Expression(clauses.TrueExpr()))...)},
+			Exprs: []clause.Expression{clause.Not(append(exprs, clause.Expression(clauseslite.TrueExpr()))...)},
 		})
 	}
 
@@ -226,22 +232,19 @@ func (d *FieldDup) doCount(tx *gorm.DB, orExpr clause.Expression, forUpdate bool
 		return
 	}
 	if cnt > 0 {
-		fdErr := fieldDupErr{
-			dbTable: d.DBTable,
-			dbName:  util.MapKeys(d.ColumnField),
+		fdErr := fieldDupCountErr{
+			dbTable:   d.DBTable,
+			dbName:    expmaps.Keys(d.ColumnField),
+			scopeKeys: scopeKeys,
 		}
-		/*if d.Tenant != nil {
-			fdErr.tenantDBName = d.Tenant.Field.DBName
-			fdErr.tenantValue = d.Tenant.Field.Value
-		}*/
 		_ = tx.AddError(fdErr)
 	}
 }
 
-func prefixOrSuffixIn(s string, keys ...string) (prefixOrSuffix bool) {
+func prefixOrSuffixIn(s string, keys ...string) (scopeKey string, prefixOrSuffix bool) {
 	slices.All(keys)(func(_ int, key string) bool {
 		if strings.HasPrefix(s, key) || strings.HasSuffix(s, key) {
-			prefixOrSuffix = true
+			scopeKey, prefixOrSuffix = key, true
 			return false
 		}
 		return true

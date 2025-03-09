@@ -6,7 +6,7 @@ import (
 )
 
 func txPure() *gorm.DB {
-	return _tx.Session(&gorm.Session{NewDB: true})
+	return iSqlite()
 }
 
 // gorm:begin_transaction -> callbacks.BeginTransaction

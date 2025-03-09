@@ -24,7 +24,7 @@ func (cfg *Config) BeforeDelete(tx *gorm.DB) {
 	if sCfg.BeforeDeleteDoQuery &&
 		util.MapOk(tx.Statement.Clauses, "RETURNING") &&
 		schemas.DialectorNotSupportReturningClause(tx.Dialector) {
-		callback.DoQueryBeforeDelete(tx)
+		/*(&clauses.Config{}).ReturningClause(tx)*/
 	}
 
 	cfg.AddTenantClauses(tx, false)

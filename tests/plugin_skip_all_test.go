@@ -13,18 +13,19 @@ var once sync.Once
 func skipTx() *gorm.DB {
 	once.Do(func() {
 		util.Must(plugins.OneError(
-			txPure().Callback().Create().Remove("multi_tenants:before_create"),
-			txPure().Callback().Create().Remove("multi_tenants:after_create"),
-			txPure().Callback().Create().Remove("multi_tenants:before_query"),
-			txPure().Callback().Create().Remove("multi_tenants:after_query"),
-			txPure().Callback().Create().Remove("multi_tenants:before_update"),
-			txPure().Callback().Create().Remove("multi_tenants:after_update"),
-			txPure().Callback().Create().Remove("multi_tenants:before_delete"),
-			txPure().Callback().Create().Remove("multi_tenants:after_delete"),
-			txPure().Callback().Create().Remove("multi_tenants:before_row"),
-			txPure().Callback().Create().Remove("multi_tenants:after_row"),
-			txPure().Callback().Create().Remove("multi_tenants:before_raw"),
-			txPure().Callback().Create().Remove("multi_tenants:after_raw"),
+			txPure().Callback().Create().Remove("gormx:before_create"),
+			txPure().Callback().Create().Remove("gormx:after_create"),
+			txPure().Callback().Create().Remove("gormx:before_query"),
+			txPure().Callback().Create().Remove("gormx:after_query"),
+			txPure().Callback().Create().Remove("gormx:before_update"),
+			//txPure().Callback().Create().Remove("gormx:after_update"),
+			txPure().Callback().Create().Remove("gormx:before_delete"),
+			//txPure().Callback().Create().Remove("gormx:after_delete"),
+			txPure().Callback().Create().Remove("clauses:before_row"),
+			txPure().Callback().Create().Remove("clauses:before_raw"),
+			txPure().Callback().Create().Remove("clauses:before_query"),
+			txPure().Callback().Create().Remove("clauses:before_update"),
+			txPure().Callback().Create().Remove("clauses:before_delete"),
 		))
 	})
 	return txPure()

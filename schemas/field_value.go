@@ -1,7 +1,7 @@
 package schemas
 
 import (
-	"github.com/Juminiy/gormx/clauses"
+	"github.com/Juminiy/gormx/clauses/clauseslite"
 	"gorm.io/gorm/clause"
 	"gorm.io/gorm/schema"
 )
@@ -23,7 +23,7 @@ func FieldFromSchema(field *schema.Field) Field {
 }
 
 func (f Field) Clause() clause.Expression {
-	var expr clause.Expression = clauses.TrueExpr()
+	var expr clause.Expression = clauseslite.TrueExpr()
 	if f.Value != nil {
 		expr = f.ClauseEq()
 	} else if len(f.Values) > 0 {

@@ -1,18 +1,19 @@
-package callback
+package clauses
 
 import (
-	"github.com/Juminiy/gormx/clauses"
 	"github.com/Juminiy/kube/pkg/util"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"slices"
 )
 
-// TODO: need to fix QueryBeforeDelete
-func DoQueryBeforeDelete(tx *gorm.DB) {
+func (cfg *Config) ReturningClause(tx *gorm.DB) {
+	if tx.Error != nil || !cfg.ExecuteReturningClause {
+		return
+	}
 	ntx := tx.Session(&gorm.Session{NewDB: true})
 
-	ntx = SkipQuery.Set(ntx)
+	//ntx = callback.SkipQuery.Set(ntx)
 
 	if schema := tx.Statement.Schema; schema != nil {
 		slices.All(schema.QueryClauses)(func(_ int, c clause.Interface) bool {
@@ -21,7 +22,7 @@ func DoQueryBeforeDelete(tx *gorm.DB) {
 		})
 	}
 
-	if txClause, ok := clauses.WhereClause(tx); ok {
+	if txClause, ok := WhereClause(tx); ok {
 		ntx.Statement.AddClause(txClause)
 	}
 
@@ -38,6 +39,6 @@ func DoQueryBeforeDelete(tx *gorm.DB) {
 
 	err := ntx.Find(tx.Statement.Dest).Error
 	if err != nil {
-		tx.Logger.Error(tx.Statement.Context, "before delete, do query, error: %s", err.Error())
+		ntx.Logger.Error(ntx.Statement.Context, "before delete, do query, error: %s", err.Error())
 	}
 }

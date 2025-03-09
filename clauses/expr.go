@@ -7,18 +7,6 @@ import (
 	"strings"
 )
 
-func TrueExpr() clause.NamedExpr {
-	return clause.NamedExpr{
-		SQL: "1=1",
-	}
-}
-
-func FalseExpr() clause.NamedExpr {
-	return clause.NamedExpr{
-		SQL: "1!=1",
-	}
-}
-
 func checkExprI(exprI clause.Expression) bool {
 	switch exprV := exprI.(type) {
 	case clause.Eq:

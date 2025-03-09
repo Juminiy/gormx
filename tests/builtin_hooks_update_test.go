@@ -2,7 +2,7 @@ package gormx_tests
 
 import (
 	"github.com/Juminiy/gormx"
-	"github.com/Juminiy/gormx/clauses"
+	"github.com/Juminiy/gormx/clauses/clauseslite"
 	"gorm.io/gorm"
 	"testing"
 )
@@ -33,7 +33,7 @@ func TestPlainUpdate(t *testing.T) { // panic
 	}).Error)*/
 
 	Err(t, txHooksUpdate().Model(Consumer{}).
-		Where(clauses.ClauseColumnEq("id", 2)).
+		Where(clauseslite.ClauseColumnEq("id", 2)).
 		Updates(map[string]any{
 			"app_id": 20,
 		}).Error)

@@ -5,7 +5,6 @@ import (
 	"github.com/Juminiy/kube/pkg/util"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
-	"gorm.io/gorm/schema"
 	"reflect"
 	"slices"
 )
@@ -71,32 +70,10 @@ func destKindIsMapAndHasPrimaryKeyNotZero(stmt *gorm.Statement) bool {
 			mapValue := mapRv.MapValues()
 			for _, pF := range stmt.Schema.PrimaryFields {
 				if mapElem, ok := util.MapElemOk(mapValue, pF.DBName); ok {
-					mapElemRv := reflect.ValueOf(mapElem)
-					return mapElemRv.IsValid() && !mapElemRv.IsZero()
+					return !deps.ItemValueIsZero(mapElem)
 				}
 			}
 		}
 	}
 	return false
-}
-
-func ClauseFieldEq(field *schema.Field, value any) clause.Interface {
-	return clause.Where{Exprs: []clause.Expression{
-		clause.Eq{
-			Column: clause.Column{
-				Table: field.Schema.Table,
-				Name:  field.DBName,
-			},
-			Value: value,
-		},
-	}}
-}
-
-func ClauseColumnEq(column string, value any) clause.Interface {
-	return clause.Where{Exprs: []clause.Expression{
-		clause.Eq{
-			Column: column,
-			Value:  value,
-		},
-	}}
 }

@@ -8,46 +8,49 @@ import (
 type FieldDupError interface {
 	error
 	DBTable() string
-	TenantDBName() string
-	TenantValue() any
 	DupDBName() []string
+	ScopeKeys() []string
 }
 
 func IsFieldDupError(err error) bool {
-	return deps.IndI(err).Type == _fieldDupErrRType
+	return deps.IndI(err).Type == _fieldDupCountErrRType ||
+		deps.IndI(err).Type == _fieldDupListCheckErrRType
 }
 
-var _fieldDupErrRType = deps.IndI(fieldDupErr{}).Type
+var _fieldDupCountErrRType = deps.IndI(fieldDupCountErr{}).Type
+var _fieldDupListCheckErrRType = deps.IndI(fieldDupListCheckErr{}).Type
 
-type fieldDupErr struct {
-	dbTable      string
-	tenantDBName string
-	tenantValue  any
-	dbName       []string
+type fieldDupCountErr struct {
+	dbTable   string
+	dbName    []string
+	scopeKeys []string
 }
 
-func (e fieldDupErr) Error() string {
-	fieldDupDesc := fmt.Sprintf("field dup error, table:[%s] column:%v",
+func (e fieldDupCountErr) Error() string {
+	fieldDupDesc := fmt.Sprintf("field dup count error, table:[%s] column:(%v)",
 		e.dbTable, e.dbName)
-	if len(e.tenantDBName) > 0 && e.tenantValue != nil {
-		return fmt.Sprintf("%s, in tenant:([%s]:[%v])",
-			fieldDupDesc, e.tenantDBName, e.tenantValue)
+	if len(e.scopeKeys) > 0 {
+		return fmt.Sprintf("%s, in scope:(%v)", fieldDupDesc, e.scopeKeys)
 	}
 	return fieldDupDesc
 }
 
-func (e fieldDupErr) DBTable() string {
+func (e fieldDupCountErr) DBTable() string {
 	return e.dbTable
 }
 
-func (e fieldDupErr) TenantDBName() string {
-	return e.tenantDBName
-}
-
-func (e fieldDupErr) TenantValue() any {
-	return e.tenantValue
-}
-
-func (e fieldDupErr) DupDBName() []string {
+func (e fieldDupCountErr) DupDBName() []string {
 	return e.dbName
+}
+
+func (e fieldDupCountErr) ScopeKeys() []string { return e.scopeKeys }
+
+type fieldDupListCheckErr struct {
+	fieldDupCountErr
+	dupValues []any
+}
+
+func (e fieldDupListCheckErr) Error() string {
+	return fmt.Sprintf("field dup list check error, table:[%s] column:(%v), values:(%v)",
+		e.dbTable, e.dbName, e.dupValues)
 }

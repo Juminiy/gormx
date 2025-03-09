@@ -1,13 +1,16 @@
 package clauses
 
-import "gorm.io/gorm"
+import (
+	"github.com/Juminiy/gormx/callback"
+	"gorm.io/gorm"
+)
 
 func (cfg *Config) RowRawClause(tx *gorm.DB) {
-	if _, ok := tx.Get(SkipRawOrRow); ok || tx.Error != nil {
+	if tx.Error != nil || callback.SkipRawRow.OK(tx) {
 		return
 	}
 
-	if cfg.AllowWriteClauseToRawOrRow {
+	if cfg.WriteClauseToRawOrRow {
 		cfg.WhereClause(tx)
 		if where, ok := WhereClause(tx); ok {
 			_, _ = tx.Statement.WriteString(" WHERE ")

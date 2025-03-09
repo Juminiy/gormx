@@ -9,7 +9,7 @@ import (
 )
 
 func _txTenant() *gorm.DB {
-	return _tx.Set("tenant_id", uint(114514))
+	return iSqlite().Set("tenant_id", uint(114514))
 }
 
 func TestQueryBeforeDeleteOne(t *testing.T) {
@@ -55,7 +55,7 @@ func TestDeleteList(t *testing.T) {
 }
 
 func mtGrp() *gorm.DB {
-	return _tx.Set("tenant_id_list", []int{1, 2, 3, 4, 5, 114514})
+	return iSqlite().Set("tenant_id_list", []int{1, 2, 3, 4, 5, 114514})
 }
 
 func TestQueryListInTenants(t *testing.T) {
@@ -65,7 +65,7 @@ func TestQueryListInTenants(t *testing.T) {
 }
 
 func mtSglAndGrp() *gorm.DB {
-	return _tx.Set("tenant_id", "114514").
+	return iSqlite().Set("tenant_id", "114514").
 		Set("tenant_id_list", []int{1, 2, 3, 4, 5, 114514})
 }
 

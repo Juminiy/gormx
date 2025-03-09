@@ -34,6 +34,7 @@ func TestFixBugBeforeUpdateTenantOmit(t *testing.T) {
 	}).Error)
 }
 
+// fixed
 func TestFixBugBeforeUpdateSetModelPkToClause(t *testing.T) {
 	Err(t, txFull().Updates(&CalicoWeave{
 		Model:    gorm.Model{ID: 2},
@@ -41,4 +42,9 @@ func TestFixBugBeforeUpdateSetModelPkToClause(t *testing.T) {
 		UserID:   util.MaxUint,
 		Name:     "MyName-2",
 	}).Error)
+}
+
+// zero data, ignore it
+func TestNoScopeUniquesErrorOrExpr(t *testing.T) {
+	Err(t, txPure().Create((&BabyTrade{}).RandomSet()).Error)
 }

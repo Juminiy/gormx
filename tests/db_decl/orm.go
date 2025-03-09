@@ -1,4 +1,4 @@
-package gormx_tests
+package db_decl
 
 import (
 	"database/sql"

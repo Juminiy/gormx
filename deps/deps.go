@@ -7,11 +7,11 @@ import (
 	"reflect"
 )
 
-func Ind(rv reflect.Value) rv3.Tv {
-	return rv3.WrapI(rv)
+func Ind(rvalue reflect.Value) rv3.Tv {
+	return rv3.WrapI(rvalue)
 }
 
-func Dir(rv reflect.Value) rv3.Tv { return rv3.Wrap(rv) }
+func Dir(rvalue reflect.Value) rv3.Tv { return rv3.Wrap(rvalue) }
 
 func IndI(i any) rv3.Tv {
 	return rv3.Indirect(i)
@@ -33,4 +33,10 @@ func AS(i any) []any {
 	return rv3.ToAnySlice(i)
 }
 
-func Comp(rt reflect.Type) bool { return rv.CanDirectCompare(rt) }
+func Comp(rtype reflect.Type) bool { return rv.CanDirectCompare(rtype) }
+
+func ItemValueIsZero(i any) bool {
+	itemRvalue := IndI(i)
+	return !itemRvalue.IsValid() ||
+		(itemRvalue.IsValid() && Comp(itemRvalue.Type) && itemRvalue.IsZero())
+}

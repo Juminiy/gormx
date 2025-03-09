@@ -1,7 +1,7 @@
 package callback
 
 import (
-	"github.com/Juminiy/gormx/clauses"
+	"github.com/Juminiy/gormx/clauses/clauseslite"
 	"github.com/Juminiy/gormx/deps"
 	"github.com/Juminiy/kube/pkg/util"
 	"github.com/samber/lo"
@@ -19,9 +19,8 @@ func BeforeUpdateMapDeletePkAndSetPkToClause(tx *gorm.DB) {
 		mapValue := deps.IndI(tx.Statement.Dest).MapValues()
 		slices.All(sch.PrimaryFields)(func(_ int, pF *schema.Field) bool {
 			if mapElem, ok := util.MapElemOk(mapValue, pF.DBName); ok {
-				mapElemRv := reflect.ValueOf(mapElem)
-				if mapElemRv.IsValid() && !mapElemRv.IsZero() {
-					tx.Statement.AddClause(clauses.ClauseFieldEq(pF, mapElem))
+				if !deps.ItemValueIsZero(mapElem) {
+					tx.Statement.AddClause(clauseslite.ClauseFieldEq(pF, mapElem))
 				}
 				deps.IndI(tx.Statement.Dest).MapSetField(map[string]any{pF.DBName: nil})
 			}
@@ -69,8 +68,7 @@ func BeforeUpdateMapDeleteZeroValueColumn(tx *gorm.DB) {
 		mapValue := deps.IndI(tx.Statement.Dest).MapValues()
 		slices.All(sch.Fields)(func(_ int, field *schema.Field) bool {
 			if mapElem, ok := util.MapElemOk(mapValue, field.DBName); ok {
-				mapElemRv := reflect.ValueOf(mapElem)
-				if mapElemRv.IsValid() && mapElemRv.IsZero() {
+				if deps.ItemValueIsZero(mapElem) {
 					deps.IndI(tx.Statement.Dest).MapSetField(map[string]any{field.DBName: nil})
 				}
 			}
@@ -122,7 +120,7 @@ func BeforeUpdateGetClausePk(modelRv reflect.Value, stmt *gorm.Statement) (claus
 		if modelRv.IsValid() && modelRv.Kind() == reflect.Struct {
 			slices.All(sch.PrimaryFields)(func(_ int, field *schema.Field) bool {
 				if value, isZero := field.ValueOf(stmt.Context, modelRv); !isZero {
-					clauseList = append(clauseList, clauses.ClauseFieldEq(field, value))
+					clauseList = append(clauseList, clauseslite.ClauseFieldEq(field, value))
 				}
 				return true
 			})
@@ -130,9 +128,8 @@ func BeforeUpdateGetClausePk(modelRv reflect.Value, stmt *gorm.Statement) (claus
 			mapValue := deps.Ind(stmt.ReflectValue).MapValues()
 			slices.All(sch.PrimaryFields)(func(_ int, pF *schema.Field) bool {
 				if mapElem, ok := util.MapElemOk(mapValue, pF.DBName); ok {
-					mapElemRv := reflect.ValueOf(mapElem)
-					if mapElemRv.IsValid() && !mapElemRv.IsZero() {
-						clauseList = append(clauseList, clauses.ClauseFieldEq(pF, mapElem))
+					if !deps.ItemValueIsZero(mapElem) {
+						clauseList = append(clauseList, clauseslite.ClauseFieldEq(pF, mapElem))
 					}
 				}
 				return true

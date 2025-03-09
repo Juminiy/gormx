@@ -96,11 +96,12 @@ func scanModelToDestMap(tx *gorm.DB) {
 
 func scanModelValueToDestValue(modelValue, destValue map[string]any) {
 	maps.All(modelValue)(func(field string, modelFv any) bool {
-		if destFv, ok := destValue[field]; ok && reflect.ValueOf(modelFv).IsZero() {
+		modelFieldValueIsZero := deps.ItemValueIsZero(modelFv)
+		if destFv, ok := destValue[field]; ok && modelFieldValueIsZero {
 			delete(destValue, field)
-		} else if (!ok || reflect.ValueOf(destFv).IsZero()) &&
+		} else if (!ok || deps.ItemValueIsZero(destFv)) &&
 			deps.Comp(reflect.TypeOf(modelFv)) &&
-			!reflect.ValueOf(modelFv).IsZero() {
+			!modelFieldValueIsZero {
 			destValue[field] = modelFv
 		}
 		return true
