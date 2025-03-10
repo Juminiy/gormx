@@ -1,6 +1,7 @@
 package gormx_tests
 
 import (
+	"github.com/Juminiy/gormx"
 	"gorm.io/gorm/clause"
 	"testing"
 )
@@ -8,6 +9,9 @@ import (
 func TestClauseCheckCommonCase(t *testing.T) {
 	var productList []Product
 	err := _txTenant().
+		Set(gormx.OptionKey, gormx.Option{
+			QueryDynamicSQL: true,
+		}).
 		Select([]string{"id", "name", "desc", "code", "price"}).
 		Omit("desc").    // omit no effect
 		Omit("`desc`").  // omit no effect
@@ -52,7 +56,11 @@ func TestClauseCheckRegularCase(t *testing.T) {}
 
 func TestClauseWriteToRowOrRaw(t *testing.T) {
 	prods := []Product{}
-	err := _txTenant().Raw("SELECT * FROM `tbl_product`").
+	err := _txTenant().
+		Set(gormx.OptionKey, gormx.Option{
+			WriteClauseToRowOrRaw: true,
+		}).
+		Raw("SELECT * FROM `tbl_product`").
 		Where("").
 		Where("", "").
 		Where("r = ?").

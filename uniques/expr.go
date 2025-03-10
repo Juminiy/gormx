@@ -1,7 +1,7 @@
 package uniques
 
 import (
-	"github.com/Juminiy/gormx/clauses/clauseslite"
+	"github.com/Juminiy/gormx/clauses"
 	"github.com/Juminiy/gormx/deps"
 	"github.com/Juminiy/kube/pkg/util"
 	"github.com/samber/lo"
@@ -52,10 +52,10 @@ func (d *rowValues) simple(tx *gorm.DB) {
 // each group if one or more fields reflect.Value.IsZero(), the group will be omitted
 // if no groups, the count will be omitted
 func (d *rowValues) expr() (orExpr clause.Expression, noExpr bool) {
-	orExpr = clauseslite.FalseExpr()
+	orExpr = clauses.FalseExpr()
 	noExpr = true
 	slices.All(lo.MapToSlice(d.Groups, func(_ string, names []string) clause.Expression {
-		var andExpr clause.Expression = clauseslite.TrueExpr()
+		var andExpr clause.Expression = clauses.TrueExpr()
 		slices.All(names)(func(_ int, name string) bool {
 			fieldValue, ok := d.FieldValue[name]
 			if !ok || deps.ItemValueIsZero(fieldValue) {
@@ -114,7 +114,7 @@ func (d *rowsValues) complex(tx *gorm.DB) {
 }
 
 func (d *rowsValues) expr() (orExpr clause.Expression, noExpr bool) {
-	orExpr = clauseslite.FalseExpr()
+	orExpr = clauses.FalseExpr()
 	noExpr = true
 	slices.All(d.List)(func(_ int, values rowValues) bool {
 		subOrExpr, noOK := values.expr()

@@ -3,6 +3,7 @@ package gormx
 import (
 	"github.com/Juminiy/gormx/callback"
 	"github.com/Juminiy/gormx/deps"
+	"github.com/Juminiy/gormx/dynamicsql"
 	"github.com/Juminiy/gormx/tenants"
 	"gorm.io/gorm"
 )
@@ -11,8 +12,14 @@ func (cfg *Config) BeforeQuery(tx *gorm.DB) {
 	if tx.Error != nil || callback.SkipQuery.OK(tx) {
 		return
 	}
-	if cfg.OptionConfig(tx).BeforeQueryOmitField {
+	sCfg := cfg.OptionConfig(tx)
+
+	if sCfg.BeforeQueryOmitField {
 		callback.BeforeQueryOmit(tx)
+	}
+
+	if sCfg.QueryDynamicSQL {
+		dynamicsql.OmitEmptyClause(tx)
 	}
 
 	cfg.AddTenantClauses(tx, true)

@@ -1,35 +1,34 @@
 package clauses
 
 import (
-	"github.com/Juminiy/gormx/deps"
 	"github.com/Juminiy/kube/pkg/util"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
-	"reflect"
 	"slices"
 )
 
-// WhereClause
-// Expr or ExprList
-func (cfg *Config) WhereClause(tx *gorm.DB) {
-	txClause, ok := WhereClause(tx)
+func ModifyWhereClause(tx *gorm.DB) (where clause.Where, ok bool) {
+	where, ok = WhereClause(tx)
 	if !ok {
 		return
 	}
 
-	exprIList := make([]clause.Expression, 0, len(txClause.Exprs))
-	slices.All(txClause.Exprs)(func(_ int, exprI clause.Expression) bool {
-		if checkExprI(exprI) {
+	exprIList := make([]clause.Expression, 0, len(where.Exprs))
+	slices.All(where.Exprs)(func(_ int, exprI clause.Expression) bool {
+		if LegalExpr(exprI) {
 			exprIList = append(exprIList, exprI)
 		}
 		return true
 	})
 	whereClause := tx.Statement.Clauses[Where]
-	txClause.Exprs = exprIList
-	whereClause.Expression = txClause
+	where.Exprs = exprIList
+	whereClause.Expression = where
 	tx.Statement.Clauses[Where] = whereClause
+	return where, ok
 }
 
+// WhereClause
+// Expr or ExprList
 func WhereClause(tx *gorm.DB) (whereClause clause.Where, ok bool) {
 	where, wok := util.MapElemOk(tx.Statement.Clauses, Where)
 	if !wok {
@@ -46,34 +45,4 @@ func NoWhereClause(tx *gorm.DB) bool {
 	return !ok &&
 		!destKindIsStructAndHasPrimaryKeyNotZero(tx.Statement) &&
 		!destKindIsMapAndHasPrimaryKeyNotZero(tx.Statement)
-}
-
-// referred from: callbacks.BuildQuerySQL
-// has at least one primaryKey value is not zero
-func destKindIsStructAndHasPrimaryKeyNotZero(stmt *gorm.Statement) bool {
-	if stmt.SQL.Len() == 0 {
-		if stmt.ReflectValue.Kind() == reflect.Struct &&
-			stmt.ReflectValue.Type() == stmt.Schema.ModelType {
-			for _, primaryField := range stmt.Schema.PrimaryFields {
-				if _, isZero := primaryField.ValueOf(stmt.Context, stmt.ReflectValue); !isZero {
-					return true
-				}
-			}
-		}
-	}
-	return false
-}
-
-func destKindIsMapAndHasPrimaryKeyNotZero(stmt *gorm.Statement) bool {
-	if stmt.SQL.Len() == 0 {
-		if mapRv := deps.IndI(stmt.Dest); mapRv.Value.Kind() == reflect.Map && stmt.Schema != nil {
-			mapValue := mapRv.MapValues()
-			for _, pF := range stmt.Schema.PrimaryFields {
-				if mapElem, ok := util.MapElemOk(mapValue, pF.DBName); ok {
-					return !deps.ItemValueIsZero(mapElem)
-				}
-			}
-		}
-	}
-	return false
 }

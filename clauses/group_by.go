@@ -8,10 +8,6 @@ import (
 
 // GroupByClause
 // GROUP BY and HAVING
-func (cfg *Config) GroupByClause(tx *gorm.DB) {
-
-}
-
 func GroupByClause(tx *gorm.DB) (groupByClause clause.GroupBy, ok bool) {
 	groupBy, ok := util.MapElemOk(tx.Statement.Clauses, GroupBy)
 	if !ok {

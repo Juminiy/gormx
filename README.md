@@ -12,7 +12,7 @@ Reinforced for gorm, aims to be best partner of gorm, rich plugins and toolkits 
 1. BUG report: uniques and tenants not consistency, because of tx session not clone current settings.
    1. ✅(BugFix;2025.03.08) tenants setting eg. tenant_id in callbacks
    2. ✅(BugFix;2025.03.08) hooks setting as well, eg. user_id in BeforeUpdate hooks
-2. Feature report: BeforeDelete Hooks with Struct, Slice, Map
+2. ⚠️(FeatureMerged) Feature report: BeforeDelete Hooks with Struct, Slice, Map
 3. Feature report: AfterFind Hooks with Find Map: map[string]any, *map[string]any, *[]map[string]any
 4. ✅(BugFix;2025.03.08) New Feature report: TenantID as a type do data isolation, can be overlapped: tenant_id, user_id, admin_id, operator_id, ...
 5. New Plugin: codegen for gin+gorm, fiber+gorm short for `CodeGenerator`
@@ -25,5 +25,7 @@ Reinforced for gorm, aims to be best partner of gorm, rich plugins and toolkits 
 3. Feature report: MySQL optimized columns IN for uniques plugin(field dup check)
 
 > 2025.03.09
-1. Feature report: need to merge clauses plugins to gormx scopes, as well dependency conflicting resolve.
-2. 
+1. ✅(2025.03.10)Feature report: need to merge clauses plugins to gormx scopes, as well dependency conflicting resolve.
+
+> 2025.03.10
+1. ⚠️(FeatureMerged) Feature report: returning clause in delete and update

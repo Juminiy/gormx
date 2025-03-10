@@ -7,27 +7,28 @@ import (
 	"slices"
 )
 
-// OrderByClause
-// ORDER BY column or ORDER BY columnList
-func (cfg *Config) OrderByClause(tx *gorm.DB) {
-	txClause, ok := OrderByClause(tx)
+func ModifyOrderByClause(tx *gorm.DB) (orderBy clause.OrderBy, ok bool) {
+	orderBy, ok = OrderByClause(tx)
 	if !ok {
 		return
 	}
 
-	columns := make([]clause.OrderByColumn, 0, len(txClause.Columns))
-	slices.All(txClause.Columns)(func(_ int, column clause.OrderByColumn) bool {
+	columns := make([]clause.OrderByColumn, 0, len(orderBy.Columns))
+	slices.All(orderBy.Columns)(func(_ int, column clause.OrderByColumn) bool {
 		if len(column.Column.Name) > 0 {
 			columns = append(columns, column)
 		}
 		return true
 	})
 	orderClause := tx.Statement.Clauses[OrderBy]
-	txClause.Columns = columns
-	orderClause.Expression = txClause
+	orderBy.Columns = columns
+	orderClause.Expression = orderBy
 	tx.Statement.Clauses[OrderBy] = orderClause
+	return orderBy, ok
 }
 
+// OrderByClause
+// ORDER BY column or ORDER BY columnList
 func OrderByClause(tx *gorm.DB) (orderByClause clause.OrderBy, ok bool) {
 	orderBy, ook := util.MapElemOk(tx.Statement.Clauses, OrderBy)
 	if !ook {
@@ -39,5 +40,4 @@ func OrderByClause(tx *gorm.DB) (orderByClause clause.OrderBy, ok bool) {
 	return
 }
 
-// tmp not to do so
-func omitOrderByNotKnownColumn(tx *gorm.DB) {}
+func omitOrderByClauseEmptyOrNotKnownColumn(tx *gorm.DB) {}

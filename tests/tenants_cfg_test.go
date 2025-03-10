@@ -15,7 +15,7 @@ func _txTenant() *gorm.DB {
 func TestQueryBeforeDeleteOne(t *testing.T) {
 	prod := Product{}
 	err := _txTenant().Set(gormx.OptionKey, gormx.Option{
-		BeforeDeleteDoQuery: true,
+		BeforeDeleteReturning: true,
 	}).Clauses(clause.Returning{Columns: []clause.Column{
 		{Name: "name"}, {Name: "desc"}, {Name: "code"},
 	}}).Delete(&prod, 40).Error
@@ -28,7 +28,7 @@ func TestQueryBeforeDeleteOne(t *testing.T) {
 func TestQueryBeforeDeleteList(t *testing.T) {
 	prod := []Product{}
 	err := _txTenant().Set(gormx.OptionKey, gormx.Option{
-		BeforeDeleteDoQuery: true,
+		BeforeDeleteReturning: true,
 	}).Delete(&prod, []int{2, 3, 4}).Error
 	if err != nil {
 		t.Error(err)

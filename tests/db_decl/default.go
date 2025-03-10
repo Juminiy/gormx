@@ -2,7 +2,6 @@ package db_decl
 
 import (
 	"github.com/Juminiy/gormx"
-	"github.com/Juminiy/gormx/clauses"
 	"github.com/Juminiy/gormx/plugins"
 	"github.com/Juminiy/kube/pkg/util"
 	"gorm.io/gorm"
@@ -23,12 +22,6 @@ func Orm(dialector gorm.Dialector) *gorm.DB {
 	})
 	util.Must(err)
 	util.Must(plugins.OneError(
-		tx.Use(&clauses.Config{
-			PluginName:            "clauses",
-			WriteClauseToRawOrRow: true,
-			CheckOrderByClause:    false,
-			BeforePlugins:         []string{"gormx"},
-		}),
 		tx.Use(&gormx.Config{
 			PluginName:  "gormx",
 			TagKey:      "mt",

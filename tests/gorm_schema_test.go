@@ -78,5 +78,5 @@ func txMigrate(tx ...*gorm.DB) *gorm.DB {
 	if len(tx) > 0 {
 		txn = tx[0]
 	}
-	return callback.SkipRawRow.Set(txn)
+	return callback.SkipRowRaw.Set(txn)
 }

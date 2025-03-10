@@ -1,7 +1,5 @@
 package clauses
 
-import "gorm.io/gorm"
-
 // gorm support clause
 const (
 	Delete     = "DELETE"
@@ -19,17 +17,3 @@ const (
 	Values     = "VALUES"
 	Where      = "WHERE"
 )
-
-func (cfg *Config) Clause(tx *gorm.DB) {
-	if tx.Error != nil {
-		return
-	}
-	for _, fn := range []func(tx *gorm.DB){
-		cfg.WhereClause,
-		cfg.OrderByClause,
-		cfg.LimitClause,
-		cfg.GroupByClause,
-	} {
-		fn(tx)
-	}
-}

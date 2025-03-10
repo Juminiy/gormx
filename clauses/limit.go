@@ -8,10 +8,6 @@ import (
 
 // LimitClause
 // LIMIT and OFFSET
-func (cfg *Config) LimitClause(tx *gorm.DB) {
-
-}
-
 func LimitClause(tx *gorm.DB) (limitClause clause.Limit, ok bool) {
 	limit, ook := util.MapElemOk(tx.Statement.Clauses, Limit)
 	if !ook {

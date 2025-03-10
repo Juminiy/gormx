@@ -21,7 +21,7 @@ func txFull() *gorm.DB {
 			DisableFieldDup:          false,
 			EnableComplexFieldDup:    true,
 			AllowTenantGlobalDelete:  false,
-			BeforeDeleteDoQuery:      true,
+			BeforeDeleteReturning:    true,
 			AllowTenantGlobalUpdate:  false,
 			UpdateMapOmitZeroElemKey: false,
 			UpdateMapOmitUnknownKey:  true,

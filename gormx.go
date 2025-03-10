@@ -16,7 +16,7 @@ type Config struct {
 	KnownModels []any             // must know your schemas(models, tables), or plugins will be folly
 	KnownScopes map[string]string // must know your isolation scope (tenant,user) fieldTag -> txKey, or plugins will do nothing on scopes
 
-	*Option
+	Option *Option
 
 	schCfg *schemas.Config
 	unqCfg *uniques.Config
@@ -72,13 +72,18 @@ func (cfg *Config) Initialize(tx *gorm.DB) error {
 
 		tx.Callback().Update().Before("gorm:setup_reflect_value").
 			Register(plugins.CallbackName(cfg.PluginName, true, 'U'), cfg.BeforeUpdate),
-		/*tx.Callback().Update().After("gorm:after_update").
-		Register(plugins.CallbackName(cfg.PluginName, false, 'U'), cfg.AfterUpdate),*/
+		tx.Callback().Update().After("gorm:after_update").
+			Register(plugins.CallbackName(cfg.PluginName, false, 'U'), cfg.AfterUpdate),
 
 		tx.Callback().Delete().Before("gorm:before_delete").
 			Register(plugins.CallbackName(cfg.PluginName, true, 'D'), cfg.BeforeDelete),
 		/*tx.Callback().Delete().After("gorm:after_delete").
 		Register(plugins.CallbackName(cfg.PluginName, false, 'D'), cfg.AfterDelete),*/
+
+		tx.Callback().Row().Before("gorm:row").
+			Register(plugins.CallbackName(cfg.PluginName, true, 'R'), cfg.BeforeRowOrRaw),
+		tx.Callback().Raw().Before("gorm:raw").
+			Register(plugins.CallbackName(cfg.PluginName, true, 'E'), cfg.BeforeRowOrRaw),
 	)
 }
 
@@ -87,20 +92,24 @@ type Option struct {
 	EnableComplexFieldDup    bool // effect on create
 	AfterCreateShowTenant    bool // effect on create
 	BeforeCreateMapCallHooks bool // effect on before create map
-	AfterCreateMapCallHooks  bool // effect on after create map, it's a low efficiency option, not to open it unless strong need
+	AfterCreateMapCallHooks  bool // effect on after create map, it's a low efficiency option, not to open it unless strongly need
 
 	AllowTenantGlobalDelete bool // effect on delete, if false: raise error when clause only have (tenant) and (soft_delete)
-	BeforeDeleteDoQuery     bool // effect on delete, use with clause.Returning, when database not support Returning
+	BeforeDeleteReturning   bool // effect on delete, use with clause.Returning, when database not support Returning
 
 	AllowTenantGlobalUpdate  bool // effect on update, if false: raise error when clause only have (tenant) and (soft_delete)
 	UpdateMapOmitZeroElemKey bool // effect on update
 	UpdateMapOmitUnknownKey  bool // effect on update
 	UpdateMapSetPkToClause   bool // effect on update
 	UpdateMapCallHooks       bool // effect on update map
+	AfterUpdateReturning     bool // effect on update, use with clause.Returning, when database not support Returning
 
 	BeforeQueryOmitField  bool // effect on query, use with tag `gorm:"->:false"`
 	AfterQueryShowTenant  bool // effect on query
-	AfterFindMapCallHooks bool // effect on find map
+	AfterFindMapCallHooks bool // effect on query map
+	QueryDynamicSQL       bool // effect on query
+
+	WriteClauseToRowOrRaw bool // effect on row or raw
 }
 
 const OptionKey = "session:option_config"

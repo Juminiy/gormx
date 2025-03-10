@@ -3,7 +3,6 @@ package uniques
 import (
 	"github.com/Juminiy/gormx/callback"
 	"github.com/Juminiy/gormx/clauses"
-	"github.com/Juminiy/gormx/clauses/clauseslite"
 	"github.com/Juminiy/gormx/deps"
 	"github.com/Juminiy/kube/pkg/util"
 	expmaps "golang.org/x/exp/maps"
@@ -220,7 +219,7 @@ func (d *FieldDup) doCount(tx *gorm.DB, orExpr clause.Expression, forUpdate bool
 	}
 	if len(exprs) > 0 {
 		ntx.Statement.AddClause(clause.Where{
-			Exprs: []clause.Expression{clause.Not(append(exprs, clause.Expression(clauseslite.TrueExpr()))...)},
+			Exprs: []clause.Expression{clause.Not(append(exprs, clause.Expression(clauses.TrueExpr()))...)},
 		})
 	}
 

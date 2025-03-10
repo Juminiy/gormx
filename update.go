@@ -44,3 +44,13 @@ func (cfg *Config) BeforeUpdate(tx *gorm.DB) {
 
 	cfg.AddTenantClauses(tx, false)
 }
+
+func (cfg *Config) AfterUpdate(tx *gorm.DB) {
+	if tx.Error != nil || callback.SkipUpdate.OK(tx) {
+		return
+	}
+
+	if cfg.OptionConfig(tx).AfterUpdateReturning {
+		callback.AfterUpdateReturning(tx)
+	}
+}

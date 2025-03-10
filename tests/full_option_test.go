@@ -176,7 +176,7 @@ var sessionOpt = gormx.Option{
 	DisableFieldDup:          false, // ✅
 	EnableComplexFieldDup:    false, // ✅
 	AllowTenantGlobalDelete:  false, // ✅
-	BeforeDeleteDoQuery:      false, // todo: bugfix
+	BeforeDeleteReturning:    false, // todo: bugfix
 	AllowTenantGlobalUpdate:  false, // ✅
 	UpdateMapOmitZeroElemKey: false, // ✅
 	UpdateMapOmitUnknownKey:  false, // ✅
