@@ -144,7 +144,22 @@ func BeforeUpdateGetClausePk(modelRv reflect.Value, stmt *gorm.Statement) (claus
 	return clausePk, false
 }
 
-// TODO: returning after update
 func AfterUpdateReturning(tx *gorm.DB) {
+	if sch, ok := hasSchemaAndDestIsMap(tx); ok {
+		newValue := make(map[string]any, len(sch.DBNames))
+		returningQuery(tx, &newValue)
+		switch setValue := tx.Statement.Dest.(type) {
+		case map[string]any:
+			maps.Copy(setValue, lo.MapKeys(newValue, func(_ any, column string) string {
+				return "new_" + column
+			}))
 
+		case *map[string]any:
+			maps.Copy(*setValue, lo.MapKeys(newValue, func(_ any, column string) string {
+				return "new_" + column
+			}))
+
+		default: // ignore
+		}
+	}
 }

@@ -108,7 +108,7 @@ func hasSchemaAndDestIsMap(tx *gorm.DB) (sch *schema.Schema, ok bool) {
 	sch = tx.Statement.Schema
 	return sch,
 		sch != nil &&
-			deps.Ind(tx.Statement.ReflectValue).T.Indirect().Kind() == reflect.Map
+			deps.IndI(tx.Statement.Dest).T.Indirect().Kind() == reflect.Map
 }
 
 // Replace Create Map Key:

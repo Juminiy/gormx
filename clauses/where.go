@@ -7,7 +7,7 @@ import (
 	"slices"
 )
 
-func ModifyWhereClause(tx *gorm.DB) (where clause.Where, ok bool) {
+func ModifyWhereClause(tx *gorm.DB, exprOk func(clause.Expression) bool) (where clause.Where, ok bool) {
 	where, ok = WhereClause(tx)
 	if !ok {
 		return
@@ -15,7 +15,7 @@ func ModifyWhereClause(tx *gorm.DB) (where clause.Where, ok bool) {
 
 	exprIList := make([]clause.Expression, 0, len(where.Exprs))
 	slices.All(where.Exprs)(func(_ int, exprI clause.Expression) bool {
-		if LegalExpr(exprI) {
+		if exprOk(exprI) {
 			exprIList = append(exprIList, exprI)
 		}
 		return true

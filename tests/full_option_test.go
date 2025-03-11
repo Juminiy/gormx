@@ -14,11 +14,12 @@ import (
 	"gorm.io/plugin/soft_delete"
 	"math/rand/v2"
 	"os"
+	"slices"
 	"testing"
 	"time"
 )
 
-func doInit() {
+/*func init() {
 	var modelList = []any{&BabyTrade{}, &Consumer{}, &Product{}, &CalicoWeave{}, &AppUser{}}
 
 	iSqlite().Plugins["gormx"].(*gormx.Config).
@@ -27,21 +28,40 @@ func doInit() {
 
 	iMySQL().Plugins["gormx"].(*gormx.Config).
 		SchemasCfg().
-		GraspSchema(iMySQL(), modelList)
+		GraspSchema(iMySQL(), modelList...)
 
 	iPg().Plugins["gormx"].(*gormx.Config).
 		SchemasCfg().
-		GraspSchema(iPg(), modelList)
+		GraspSchema(iPg(), modelList...)
+
+}*/
+
+func init() {
+	var modelList = []any{&BabyTrade{}, &Consumer{}, &Product{}, &CalicoWeave{}, &AppUser{}}
+
+	slices.Values([]*gorm.DB{isqlite, imysql, ipg})(func(db *gorm.DB) bool {
+		util.Must(db.Use(&gormx.Config{
+			PluginName:  "gormx",
+			TagKey:      "mt",
+			KnownModels: modelList,
+			KnownScopes: map[string]string{
+				"tenant":  "tenant_id",
+				"user":    "user_id",
+				"project": "project_id",
+			},
+		}))
+		return true
+	})
+}
+
+func TestInit(t *testing.T) {
+	var modelList = []any{&BabyTrade{}, &Consumer{}, &Product{}, &CalicoWeave{}, &AppUser{}}
 
 	util.Must(plugins.OneError(
 		txMigrate(iSqlite()).AutoMigrate(modelList...),
 		txMigrate(iMySQL()).AutoMigrate(modelList...),
 		txMigrate(iPg()).AutoMigrate(modelList...),
 	))
-}
-
-func TestInit(t *testing.T) {
-	//doInit()
 }
 
 type BabyTrade struct {
@@ -146,10 +166,10 @@ func BabyTradeMapHardCode() map[string]any {
 var _HardCodeSim = uuid.NewString()
 
 func TestInitBabyTrade(t *testing.T) {
-	Err(t, txMigrate().AutoMigrate(&BabyTrade{}))
+	//Err(t, txMigrate().AutoMigrate(&BabyTrade{}))
 }
 
-func Test2(t *testing.T) {
+func TestBatchCreate(t *testing.T) {
 	csvFile, err := os.Open("testdata/baby_trade.csv")
 	if err != nil {
 		t.Error(err)
@@ -159,7 +179,8 @@ func Test2(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	Err(t, txFull().Create(util.New(lo.Map(arr2d[1:500], func(item []string, _ int) BabyTrade {
+	startT := time.Now()
+	Err(t, txMysql().CreateInBatches(util.New(lo.Map(arr2d, func(item []string, _ int) BabyTrade {
 		return BabyTrade{
 			SimUUID:   uuid.NewString(),
 			UserID:    cast.ToUint(item[0]),
@@ -169,29 +190,33 @@ func Test2(t *testing.T) {
 			BuyMount:  cast.ToInt(item[4]),
 			Day:       item[5],
 		}
-	}))).Error)
+	})), 1024).Error)
+	t.Logf("time dur: %f", time.Now().Sub(startT).Seconds())
 }
 
 var sessionOpt = gormx.Option{
-	DisableFieldDup:          false, // ✅
-	EnableComplexFieldDup:    false, // ✅
-	AllowTenantGlobalDelete:  false, // ✅
-	BeforeDeleteReturning:    false, // todo: bugfix
-	AllowTenantGlobalUpdate:  false, // ✅
-	UpdateMapOmitZeroElemKey: false, // ✅
-	UpdateMapOmitUnknownKey:  false, // ✅
-	UpdateMapSetPkToClause:   false, // ✅
-	AfterCreateShowTenant:    false, // ✅
-	BeforeQueryOmitField:     false, // ✅
-	AfterQueryShowTenant:     false, // ✅
-	BeforeCreateMapCallHooks: false, // ✅
-	AfterCreateMapCallHooks:  false, // ✅
-	UpdateMapCallHooks:       false, // ✅
-	AfterFindMapCallHooks:    false, // todo: bugfix
+	DisableFieldDup:          false,
+	EnableComplexFieldDup:    false,
+	AfterCreateShowTenant:    false,
+	BeforeCreateMapCallHooks: false,
+	AfterCreateMapCallHooks:  false,
+	AllowTenantGlobalDelete:  false,
+	BeforeDeleteReturning:    false,
+	AllowTenantGlobalUpdate:  false,
+	UpdateMapOmitZeroElemKey: false,
+	UpdateMapOmitUnknownKey:  false,
+	UpdateMapSetPkToClause:   false,
+	UpdateMapCallHooks:       false,
+	AfterUpdateReturning:     false,
+	BeforeQueryOmitField:     false,
+	AfterQueryShowTenant:     false,
+	AfterFindMapCallHooks:    false,
+	QueryDynamicSQL:          false,
+	WriteClauseToRowOrRaw:    false,
 }
 
 func TestNoTenant(t *testing.T) {
-	Err(t, txPure().
+	Err(t, txMysql().
 		Set("user_id", 114514).
 		Set("tenant_id", 114514).
 		Set(gormx.OptionKey, gormx.Option{DisableFieldDup: true}).

@@ -21,11 +21,11 @@ func (cfg *Config) BeforeDelete(tx *gorm.DB) {
 		}
 	}
 
+	cfg.AddTenantClauses(tx, false)
+
 	if sCfg.BeforeDeleteReturning &&
-		util.MapOk(tx.Statement.Clauses, "RETURNING") &&
+		util.MapOk(tx.Statement.Clauses, clauses.Returning) &&
 		schemas.DialectorNotSupportReturningClause(tx.Dialector) {
 		callback.BeforeDeleteReturning(tx)
 	}
-
-	cfg.AddTenantClauses(tx, false)
 }

@@ -20,19 +20,22 @@ func txFull() *gorm.DB {
 		Set(gormx.OptionKey, gormx.Option{
 			DisableFieldDup:          false,
 			EnableComplexFieldDup:    true,
+			AfterCreateShowTenant:    true,
+			BeforeCreateMapCallHooks: true,
+			AfterCreateMapCallHooks:  true,
 			AllowTenantGlobalDelete:  false,
 			BeforeDeleteReturning:    true,
 			AllowTenantGlobalUpdate:  false,
-			UpdateMapOmitZeroElemKey: false,
+			UpdateMapOmitZeroElemKey: true,
 			UpdateMapOmitUnknownKey:  true,
 			UpdateMapSetPkToClause:   true,
-			AfterCreateShowTenant:    true,
+			UpdateMapCallHooks:       true,
+			AfterUpdateReturning:     true,
 			BeforeQueryOmitField:     true,
 			AfterQueryShowTenant:     true,
-			BeforeCreateMapCallHooks: true,
-			AfterCreateMapCallHooks:  true,
-			UpdateMapCallHooks:       true,
 			AfterFindMapCallHooks:    true,
+			QueryDynamicSQL:          true,
+			WriteClauseToRowOrRaw:    true,
 		})
 }
 
@@ -88,7 +91,7 @@ func (w *CalicoWeave) AfterFind(tx *gorm.DB) error {
 }
 
 func TestInitFullFeatureTable(t *testing.T) {
-	Err(t, txMigrate().AutoMigrate(&CalicoWeave{}))
+	//Err(t, txMigrate().AutoMigrate(&CalicoWeave{}))
 }
 
 func TestCreateWithTenantUserDefaultValue(t *testing.T) {

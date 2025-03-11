@@ -11,12 +11,12 @@ import (
 // clause.Where, clause.OrderBy, clause.Limit
 // to sql that before gorm/finisher_api.go
 func WriteToRowOrRaw(tx *gorm.DB) {
-	if where, ok := clauses.ModifyWhereClause(tx); ok {
+	if where, ok := clauses.ModifyWhereClause(tx, clauses.LegalExpr); ok {
 		_, _ = tx.Statement.WriteString(" WHERE ")
 		where.Build(tx.Statement)
 	}
 
-	if orderBy, ok := clauses.ModifyOrderByClause(tx); ok {
+	if orderBy, ok := clauses.ModifyOrderByClause(tx, clauses.LegalColumn); ok {
 		_ = tx.Statement.WriteByte(' ')
 		orderBy.Build(tx.Statement)
 	}

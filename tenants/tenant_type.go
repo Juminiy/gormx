@@ -9,11 +9,11 @@ import (
 	"gorm.io/gorm/schema"
 )
 
-type ID tenantID
+type ID sql.NullInt64
 
 func (t ID) MarshalJSON() ([]byte, error) {
 	if t.Valid {
-		return json.Marshal(t.V)
+		return json.Marshal(t.Int64)
 	}
 	return json.Marshal(nil)
 }
@@ -22,7 +22,7 @@ func (t *ID) UnmarshalJSON(b []byte) error {
 	if schemas.NotValidJSONValue(util.Bytes2StringNoCopy(b)) {
 		t.Valid = false
 		return nil
-	} else if err := json.Unmarshal(b, &t.V); err == nil {
+	} else if err := json.Unmarshal(b, &t.Int64); err == nil {
 		t.Valid = true
 		return nil
 	} else {
@@ -31,18 +31,25 @@ func (t *ID) UnmarshalJSON(b []byte) error {
 }
 
 func (t ID) QueryClauses(f *schema.Field) []clause.Interface {
-	return tenantID(t).Clauses(f)
+	return t.tenantID().Clauses(f)
 }
 
 func (t ID) UpdateClauses(f *schema.Field) []clause.Interface {
-	return tenantID(t).Clauses(f)
+	return t.tenantID().Clauses(f)
 }
 
 func (t ID) DeleteClauses(f *schema.Field) []clause.Interface {
-	return tenantID(t).Clauses(f)
+	return t.tenantID().Clauses(f)
 }
 
-type HideID tenantID
+func (t ID) tenantID() tenantID {
+	return tenantID{
+		Valid: t.Valid,
+		V:     t.Int64,
+	}
+}
+
+type HideID ID
 
 func (t HideID) MarshalJSON() ([]byte, error) {
 	return nil, nil
@@ -53,18 +60,58 @@ func (t *HideID) UnmarshalJSON(b []byte) error {
 }
 
 func (t HideID) QueryClauses(f *schema.Field) []clause.Interface {
-	return tenantID(t).Clauses(f)
+	return ID(t).tenantID().Clauses(f)
 }
 
 func (t HideID) UpdateClauses(f *schema.Field) []clause.Interface {
-	return tenantID(t).Clauses(f)
+	return ID(t).tenantID().Clauses(f)
 }
 
 func (t HideID) DeleteClauses(f *schema.Field) []clause.Interface {
-	return tenantID(t).Clauses(f)
+	return ID(t).tenantID().Clauses(f)
 }
 
-type tenantID sql.Null[uint]
+type SID sql.NullString
+
+func (t SID) MarshalJSON() ([]byte, error) {
+	if t.Valid {
+		return json.Marshal(t.String)
+	}
+	return json.Marshal(nil)
+}
+
+func (t *SID) UnmarshalJSON(b []byte) error {
+	if schemas.NotValidJSONValue(util.Bytes2StringNoCopy(b)) {
+		t.Valid = false
+		return nil
+	} else if err := json.Unmarshal(b, &t.String); err == nil {
+		t.Valid = true
+		return nil
+	} else {
+		return err
+	}
+}
+
+func (t SID) QueryClauses(f *schema.Field) []clause.Interface {
+	return t.tenantID().Clauses(f)
+}
+
+func (t SID) UpdateClauses(f *schema.Field) []clause.Interface {
+	return t.tenantID().Clauses(f)
+}
+
+func (t SID) DeleteClauses(f *schema.Field) []clause.Interface {
+	return t.tenantID().Clauses(f)
+}
+
+func (t SID) tenantID() tenantID {
+	return tenantID{
+		Valid: t.Valid,
+		V:     t.String,
+	}
+}
+
+type tenantID sql.Null[any]
 
 func (t tenantID) Clauses(f *schema.Field) []clause.Interface {
 	if t.Valid {

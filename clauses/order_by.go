@@ -7,7 +7,7 @@ import (
 	"slices"
 )
 
-func ModifyOrderByClause(tx *gorm.DB) (orderBy clause.OrderBy, ok bool) {
+func ModifyOrderByClause(tx *gorm.DB, columnOk func(clause.OrderByColumn) bool) (orderBy clause.OrderBy, ok bool) {
 	orderBy, ok = OrderByClause(tx)
 	if !ok {
 		return
@@ -15,7 +15,7 @@ func ModifyOrderByClause(tx *gorm.DB) (orderBy clause.OrderBy, ok bool) {
 
 	columns := make([]clause.OrderByColumn, 0, len(orderBy.Columns))
 	slices.All(orderBy.Columns)(func(_ int, column clause.OrderByColumn) bool {
-		if len(column.Column.Name) > 0 {
+		if columnOk(column) {
 			columns = append(columns, column)
 		}
 		return true
@@ -40,4 +40,11 @@ func OrderByClause(tx *gorm.DB) (orderByClause clause.OrderBy, ok bool) {
 	return
 }
 
-func omitOrderByClauseEmptyOrNotKnownColumn(tx *gorm.DB) {}
+func LegalColumn(column clause.OrderByColumn) bool {
+	return len(column.Column.Name) > 0
+}
+
+// TODO: fix known column
+func KnownColumn(column clause.OrderByColumn) bool {
+	return len(column.Column.Name) > 0
+}

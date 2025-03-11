@@ -1,9 +1,11 @@
 package callback
 
 import (
+	"github.com/Juminiy/gormx/clauses"
 	"github.com/Juminiy/gormx/deps"
 	"github.com/samber/lo"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"gorm.io/gorm/schema"
 	"maps"
 	"reflect"
@@ -144,4 +146,38 @@ func toColumnValue(sch *schema.Schema, values map[string]any) map[string]any {
 		}
 		return ""
 	})
+}
+
+func returningQuery(tx *gorm.DB, dest any) {
+	if tx.Error != nil {
+		return
+	}
+	ntx := tx.Session(&gorm.Session{NewDB: true, SkipHooks: true})
+
+	ntx = ntx.Table(tx.Statement.Table)
+
+	if sch := tx.Statement.Schema; sch != nil {
+		slices.All(sch.QueryClauses)(func(_ int, c clause.Interface) bool {
+			ntx.Statement.AddClause(c)
+			return true
+		})
+	}
+
+	if txClause, ok := clauses.WhereClause(tx); ok {
+		ntx.Statement.AddClause(txClause)
+	}
+
+	if returning, ok := clauses.ReturningClause(tx); ok && len(returning.Columns) > 0 {
+		slices.All(returning.Columns)(func(_ int, column clause.Column) bool {
+			ntx.Statement.Selects = append(ntx.Statement.Selects, column.Name)
+			return true
+		})
+	} else if len(tx.Statement.Selects) != 0 {
+		ntx.Statement.Selects = tx.Statement.Selects
+	}
+
+	err := ntx.Find(dest).Error
+	if err != nil {
+		ntx.Logger.Error(ntx.Statement.Context, "before delete, do query, error: %s", err.Error())
+	}
 }

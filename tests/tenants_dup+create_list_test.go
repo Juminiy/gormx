@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-var _txListDup = func() *gorm.DB {
+func _txListDup() *gorm.DB {
 	return _txTenant().Set(gormx.OptionKey, gormx.Option{
 		EnableComplexFieldDup: true,
 	})
@@ -31,4 +31,8 @@ func TestCreateMapListDup(t *testing.T) {
 			{"Name": "Shampoo", "Desc": "Herbal shampoo", "NetContent": "400ml", "Code": 100009, "Price": 2500},
 			{"Name": "Toothpaste", "Desc": "Mint toothpaste", "NetContent": "120g", "Code": 100010, "Price": 800},
 		}).Error)
+}
+
+func TestCreateStructDupInExpr(t *testing.T) {
+	Err(t, txScope().Create((&BabyTrade{}).RandomSet()).Error)
 }

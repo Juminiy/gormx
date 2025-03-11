@@ -12,16 +12,22 @@ import (
 	"testing"
 )
 
+var (
+	isqlite = sqlite3.Orm()
+	imysql  = mysql8.Orm()
+	ipg     = postgres17.Orm()
+)
+
 func iSqlite() *gorm.DB {
-	return sqlite3.Orm()
+	return isqlite.Debug()
 }
 
 func iMySQL() *gorm.DB {
-	return mysql8.Orm()
+	return imysql.Debug()
 }
 
 func iPg() *gorm.DB {
-	return postgres17.Orm()
+	return ipg.Debug()
 }
 
 var Enc = func(v any) string {

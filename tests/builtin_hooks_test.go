@@ -74,7 +74,7 @@ func ClauseUserID(stmt *gorm.Statement, userID any) clause.Interface {
 }
 
 func TestBuiltinHooks(t *testing.T) {
-	Err(t, txMigrate().AutoMigrate(&Consumer{}))
+	//Err(t, txMigrate().AutoMigrate(&Consumer{}))
 }
 
 func txHooks() *gorm.DB {

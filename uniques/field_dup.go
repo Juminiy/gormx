@@ -9,6 +9,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"gorm.io/gorm/schema"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"reflect"
 	"slices"
 	"strings"
@@ -179,62 +180,68 @@ func (d *FieldDup) Update(tx *gorm.DB) {
 	}
 }
 
-func (d *FieldDup) doCount(tx *gorm.DB, orExpr clause.Expression, forUpdate bool) {
-	var scopeKeys []string
+func (d *FieldDup) doCount(tx *gorm.DB, exprI clause.Expression, forUpdate bool) {
+	scopeKeys := sets.New[string]()
 	// new session and copy settings
 	ntx := tx.Session(&gorm.Session{NewDB: true, SkipHooks: true})
-	// where clause 1. scopes: tenant_id, user_id, project_id, ...
+	// where clause
+	// 1. copy scopes session values: tenant_id, user_id, project_id, ...
+	// 2. do not skip Query Count(*) callbacks /*callback.SkipQuery.Set(ntx).*/
 	tx.Statement.Settings.Range(func(key, value any) bool {
 		if keyStr, ok := key.(string); ok {
 			if scopeKey, ok := prefixOrSuffixIn(keyStr, d.cfg.TxKeys...); ok {
-				scopeKeys = append(scopeKeys, scopeKey)
+				scopeKeys.Insert(scopeKey)
 				ntx = ntx.Set(keyStr, value)
 			}
 		}
 		return true
 	})
-	ntx.Statement.Schema = tx.Statement.Schema
-
-	/*callback.SkipQuery.Set(ntx).*/
+	/*ntx.Statement.Schema = tx.Statement.Schema*/
 
 	// where clause 2. orExpr
-	ntx = ntx.Table(d.DBTable).Where(orExpr)
+	ntx = ntx.Table(d.DBTable).Where(exprI)
 
 	// where clause 3. soft_delete
-	// and other clauses
+	// and other clauses, maybe unused
 	slices.All(d.Clauses)(func(_ int, c clause.Interface) bool {
 		ntx.Statement.AddClause(c)
 		return true
 	})
 
 	// where clause for update 4. NOT(tx.Clause)
-	var exprs []clause.Expression
 	if forUpdate {
+		var exprs []clause.Expression
 		if expr, ok := callback.BeforeUpdateGetClausePk(tx.Statement.ReflectValue, tx.Statement); ok {
 			exprs = append(exprs, expr)
 		}
-	}
-	if txClause, ok := clauses.WhereClause(tx); ok {
-		exprs = append(exprs, txClause)
-	}
-	if len(exprs) > 0 {
-		ntx.Statement.AddClause(clause.Where{
-			Exprs: []clause.Expression{clause.Not(append(exprs, clause.Expression(clauses.TrueExpr()))...)},
-		})
+		if txClause, ok := clauses.WhereClause(tx); ok {
+			exprs = append(exprs, txClause)
+		}
+		if len(exprs) > 0 {
+			ntx.Statement.AddClause(clause.Where{
+				Exprs: []clause.Expression{clause.Not(append(exprs, clause.Expression(clauses.TrueExpr()))...)},
+			})
+		}
 	}
 
 	// do Count
 	var cnt int64
 	err := ntx.Count(&cnt).Error
 	if err != nil {
-		ntx.Logger.Error(ntx.Statement.Context, "before create or update, do field duplicated check, error: %s", err.Error())
+		ntx.Logger.Error(ntx.Statement.Context, "before %s, do field uniques check, error: %s", func() string {
+			if forUpdate {
+				return "update"
+			} else {
+				return "create"
+			}
+		}(), err.Error())
 		return
 	}
 	if cnt > 0 {
 		fdErr := fieldDupCountErr{
 			dbTable:   d.DBTable,
 			dbName:    expmaps.Keys(d.ColumnField),
-			scopeKeys: scopeKeys,
+			scopeKeys: scopeKeys.UnsortedList(),
 		}
 		_ = tx.AddError(fdErr)
 	}

@@ -141,3 +141,19 @@ INSERT INTO `tbl_baby_trade`
 (54,2718,162,366,"2025-03-09 16:11:49.884","1902-06-13 22:38:40.367356453 +0000 UTC","1e53bf2e-24ca-4d6e-aecf-c50ff88f1962",114514,"2025-03-09 16:11:49.884",114514),
 (132,1855,40,135,"2025-03-09 16:11:49.884","1968-03-19 22:02:51.226301578 +0000 UTC","bb2c38b0-ef6e-4af8-96e5-a8f60e7ee1b9",114514,"2025-03-09 16:11:49.884",114514)
 RETURNING `id`
+---
+
+SELECT count(*) FROM `tbl_product` WHERE
+(((((1!=1 OR ((1!=1
+OR ((1=1 AND `name` = "Milk") AND `desc` = "Fresh milk"))
+OR (1=1 AND `code` = 100001)))
+OR ((1!=1 OR ((1=1 AND `name` = "Bread") AND `desc` = "Whole wheat bread"))
+OR (1=1 AND `code` = 100002)))
+OR ((1!=1 OR ((1=1 AND `name` = "Rice") AND `desc` = "Long grain rice"))
+OR (1=1 AND `code` = 100003)))
+OR ((1!=1 OR (1=1 AND `code` = 100004))
+OR ((1=1 AND `name` = "Eggs") AND `desc` = "Free-range eggs")))
+OR ((1!=1 OR ((1=1 AND `name` = "Chicken") AND `desc` = "Fresh chicken breast"))
+OR (1=1 AND `code` = 100006)))
+AND `tbl_product`.`deleted_at` IS NULL
+AND `tbl_product`.`tenant_id` = 114514

@@ -15,6 +15,11 @@ import (
 	"strings"
 )
 
+// rowValuesExpr
+// support one group, multiple groups
+// each group one field, multiple fields
+// each group if one or more fields reflect.Value.IsZero(), the group will be omitted
+// if no groups, the count will be omitted
 type rowValues struct {
 	FieldValue  map[string]any
 	ColumnValue map[string]any
@@ -23,37 +28,39 @@ type rowValues struct {
 }
 
 func (d *rowValues) simple(tx *gorm.DB) {
-	if len(d.Groups) == 0 {
-		return
-	}
-	if len(d.FieldValue) == 0 &&
-		len(d.ColumnValue) == 0 {
+	if len(d.FieldValue) == 0 && len(d.ColumnValue) == 0 {
 		return
 	} else if len(d.FieldValue) == 0 {
 		d.FieldValue = lo.MapKeys(d.ColumnValue, func(_ any, column string) string {
 			return d.ColumnField[column]
 		})
-	} /*else if len(d.ColumnValue) == 0 {
-		d.ColumnValue = lo.MapKeys(d.FieldValue, func(_ any, name string) string {
-			return d.FieldColumn[name]
-		})
-	}*/
-
-	orExpr, noExpr := d.expr()
-	if noExpr {
-		return
 	}
-	d.doCount(tx, orExpr, d.ForUpdate)
+
+	if exprI, ok := d.expr(); ok {
+		d.doCount(tx, exprI, d.ForUpdate)
+	}
 }
 
-// rowValuesExpr
-// support one group, multiple groups
-// each group one field, multiple fields
-// each group if one or more fields reflect.Value.IsZero(), the group will be omitted
-// if no groups, the count will be omitted
-func (d *rowValues) expr() (orExpr clause.Expression, noExpr bool) {
-	orExpr = clauses.FalseExpr()
-	noExpr = true
+func (d *rowValues) expr() (exprI clause.Expression, ok bool) {
+	return d.exprIn()
+}
+
+func (d *rowValues) exprIn() (exprIn clause.Expression, ok bool) {
+	exprIn, ok = clauses.FalseExpr(), false
+	slices.Values(lo.MapToSlice(d.Groups, func(_ string, names []string) clause.Expression {
+		return clause.IN{
+			Column: lo.Map(names, func(name string, _ int) string { return d.FieldColumn[name] }),
+			Values: []any{lo.Map(names, func(name string, _ int) any { return d.FieldValue[name] })},
+		}
+	}))(func(inExpr clause.Expression) bool {
+		exprIn, ok = clause.Or(exprIn, inExpr), true
+		return true
+	})
+	return exprIn, ok
+}
+
+func (d *rowValues) exprOr() (orExpr clause.Expression, orOk bool) {
+	orExpr, orOk = clauses.FalseExpr(), false
 	slices.All(lo.MapToSlice(d.Groups, func(_ string, names []string) clause.Expression {
 		var andExpr clause.Expression = clauses.TrueExpr()
 		slices.All(names)(func(_ int, name string) bool {
@@ -69,66 +76,79 @@ func (d *rowValues) expr() (orExpr clause.Expression, noExpr bool) {
 			return true
 		})
 		return andExpr
-	}))(func(_ int, expression clause.Expression) bool {
-		if expression == nil {
+	}))(func(_ int, andExpr clause.Expression) bool {
+		if andExpr == nil {
 			return true
 		}
-		noExpr = false
-		orExpr = clause.Or(orExpr, expression)
+		orExpr, orOk = clause.Or(orExpr, andExpr), true
 		return true
 	})
 	return
 }
 
 type rowsValues struct {
-	List []rowValues
+	Value []map[string]any
+	//List  []rowValues
 	*FieldDup
 }
 
 func (d *rowsValues) complex(tx *gorm.DB) {
-	if len(d.Groups) == 0 {
-		return
-	}
 	rval := deps.Ind(tx.Statement.ReflectValue)
 	if !util.ElemIn(rval.T.Indirect().Kind(), reflect.Struct, reflect.Map) {
 		return
 	}
-	sliceMap := rval.Values()
+	d.Value = rval.Values()
 
-	if fdErr := d.listCheck(sliceMap); fdErr != nil {
+	if fdErr := d.listCheck(); fdErr != nil {
 		_ = tx.AddError(fdErr)
 		return
 	}
 
-	d.List = lo.Map(sliceMap, func(item map[string]any, _ int) rowValues {
+	/*d.List = lo.Map(sliceMap, func(item map[string]any, _ int) rowValues {
 		return rowValues{
 			FieldValue: item,
 			FieldDup:   d.FieldDup,
 		}
-	})
-	orExpr, noExpr := d.expr()
-	if noExpr {
-		return
+	})*/
+	if exprI, ok := d.expr(); ok {
+		d.doCount(tx, exprI, false)
 	}
-	d.doCount(tx, orExpr, false)
 }
 
-func (d *rowsValues) expr() (orExpr clause.Expression, noExpr bool) {
-	orExpr = clauses.FalseExpr()
-	noExpr = true
-	slices.All(d.List)(func(_ int, values rowValues) bool {
-		subOrExpr, noOK := values.expr()
-		if noOK {
-			return true
+func (d *rowsValues) expr() (exprI clause.Expression, ok bool) {
+	return d.exprIn()
+}
+
+func (d *rowsValues) exprIn() (exprIn clause.Expression, ok bool) {
+	exprIn, ok = clauses.FalseExpr(), false
+	slices.Values(lo.MapToSlice(d.Groups, func(_ string, names []string) clause.Expression {
+		return clause.IN{
+			Column: lo.Map(names, func(name string, _ int) string { return d.FieldColumn[name] }),
+			Values: lo.Map(d.Value, func(mapValue map[string]any, _ int) any {
+				return lo.Map(names, func(name string, _ int) any { return mapValue[name] })
+			}),
 		}
-		noExpr = false
-		orExpr = clause.Or(orExpr, subOrExpr)
+	}))(func(inExpr clause.Expression) bool {
+		exprIn, ok = clause.Or(exprIn, inExpr), true
 		return true
 	})
 	return
 }
 
-func (d *rowsValues) listCheck(sliceMap []map[string]any) (fdErr error) {
+/*func (d *rowsValues) exprOr() (orExpr clause.Expression, orOk bool) {
+	orExpr, orOk = clauses.FalseExpr(), false
+	slices.All(d.List)(func(_ int, values rowValues) bool {
+		subOrExpr, subOrOk := values.expr()
+		if !subOrOk {
+			return true
+		}
+		orExpr, orOk = clause.Or(orExpr, subOrExpr), true
+		return true
+	})
+	return
+}*/
+
+func (d *rowsValues) listCheck() (fdErr error) {
 	groupSets := lo.MapValues(d.Groups, func(_ []string, groupName string) sets.Set[string] {
 		return sets.New[string]()
 	})
@@ -161,7 +181,7 @@ func (d *rowsValues) listCheck(sliceMap []map[string]any) (fdErr error) {
 		return buf.String(), values, isComplete
 	}
 
-	slices.Values(sliceMap)(func(mapValues map[string]any) bool {
+	slices.Values(d.Value)(func(mapValues map[string]any) bool {
 		if fdErr != nil {
 			return false
 		}

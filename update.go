@@ -3,6 +3,8 @@ package gormx
 import (
 	"github.com/Juminiy/gormx/callback"
 	"github.com/Juminiy/gormx/clauses"
+	"github.com/Juminiy/gormx/schemas"
+	"github.com/Juminiy/kube/pkg/util"
 	"gorm.io/gorm"
 )
 
@@ -50,7 +52,9 @@ func (cfg *Config) AfterUpdate(tx *gorm.DB) {
 		return
 	}
 
-	if cfg.OptionConfig(tx).AfterUpdateReturning {
+	if cfg.OptionConfig(tx).AfterUpdateReturning &&
+		util.MapOk(tx.Statement.Clauses, clauses.Returning) &&
+		schemas.DialectorNotSupportReturningClause(tx.Dialector) {
 		callback.AfterUpdateReturning(tx)
 	}
 }

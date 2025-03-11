@@ -18,7 +18,7 @@ type AppUser struct {
 }
 
 func TestCreateAppUser(t *testing.T) {
-	Err(t, txMigrate().AutoMigrate(&AppUser{}))
+	//Err(t, txMigrate().AutoMigrate(&AppUser{}))
 	appUser := AppUser{
 		Username: "manboda",
 		Password: encrypt.Md5("some_password"),

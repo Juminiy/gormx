@@ -9,6 +9,6 @@ import (
 // OmitEmptyClause
 // more to expansion
 func OmitEmptyClause(tx *gorm.DB) {
-	clauses.ModifyWhereClause(tx)
-	clauses.ModifyOrderByClause(tx)
+	clauses.ModifyWhereClause(tx, clauses.NotZeroValueExpr)
+	clauses.ModifyOrderByClause(tx, clauses.KnownColumn)
 }
