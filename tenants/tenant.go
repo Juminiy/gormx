@@ -10,12 +10,12 @@ import (
 )
 
 type Config struct {
-	Name         string // default: gormx:tenants
+	Name         string // default: gormx_scope:$(fieldTag)
 	TagKey       string // default: gormx
-	TagTenantKey string // default: tenant
-	TxTenantKey  string // default: tenant_id
-	TxTenantsKey string // default: tenant_ids
-	TxSkipKey    string // default: skip_tenant
+	TagTenantKey string // default: $(fieldTag)
+	TxTenantKey  string // default: $(txKey)
+	TxTenantsKey string // default: $(txKey)_list
+	TxSkipKey    string // default: skip_$(txKey)
 }
 
 type Tenant struct {

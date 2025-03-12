@@ -9,7 +9,7 @@ Reinforced for gorm, aims to be best partner of gorm, rich plugins and toolkits 
 4. ✅(2025.03.09) Move update and delete clause check to clause_checker
 
 > 2025.03.06
-1. BUG report: uniques and tenants not consistency, because of tx session not clone current settings.
+1. ✅(BugFixed)BUG report: uniques and tenants not consistency, because of tx session not clone current settings.
    1. ✅(BugFix;2025.03.08) tenants setting eg. tenant_id in callbacks
    2. ✅(BugFix;2025.03.08) hooks setting as well, eg. user_id in BeforeUpdate hooks
 2. ⚠️(FeatureReported) Feature report: BeforeDelete Hooks with Struct, Slice, Map
@@ -32,3 +32,7 @@ Reinforced for gorm, aims to be best partner of gorm, rich plugins and toolkits 
 
 > 2025.03.11
 1. ✅(2025.03.11)Feature report: MySQL8, SQLite3, Postgres17 all supports IN columns expression
+
+> 2025.03.12
+1. Full Feature Test in pkg: tests/tests_v2
+2. ⚠️(NotTest)Feature report: uniques IN columns expression support omitempty value

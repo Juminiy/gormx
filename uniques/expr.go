@@ -48,15 +48,30 @@ func (d *rowValues) expr() (exprI clause.Expression, ok bool) {
 func (d *rowValues) exprIn() (exprIn clause.Expression, ok bool) {
 	exprIn, ok = clauses.FalseExpr(), false
 	slices.Values(lo.MapToSlice(d.Groups, func(_ string, names []string) clause.Expression {
-		return clause.IN{
-			Column: lo.Map(names, func(name string, _ int) string { return d.FieldColumn[name] }),
-			Values: []any{lo.Map(names, func(name string, _ int) any { return d.FieldValue[name] })},
+		if inExprValid(names, d.FieldValue) {
+			return clause.IN{
+				Column: lo.Map(names, func(name string, _ int) string { return d.FieldColumn[name] }),
+				Values: []any{lo.Map(names, func(name string, _ int) any { return d.FieldValue[name] })},
+			}
 		}
+		return nil
 	}))(func(inExpr clause.Expression) bool {
-		exprIn, ok = clause.Or(exprIn, inExpr), true
+		if inExpr != nil {
+			exprIn, ok = clause.Or(exprIn, inExpr), true
+		}
 		return true
 	})
 	return exprIn, ok
+}
+
+func inExprValid(fields []string, fieldValues map[string]any) bool {
+	if _, noFieldOrValZero := lo.Find(fields, func(field string) bool {
+		fieldVal, hasField := fieldValues[field]
+		return !hasField || deps.ItemValueIsZero(fieldVal)
+	}); !noFieldOrValZero {
+		return true
+	}
+	return false
 }
 
 func (d *rowValues) exprOr() (orExpr clause.Expression, orOk bool) {
@@ -124,8 +139,12 @@ func (d *rowsValues) exprIn() (exprIn clause.Expression, ok bool) {
 	slices.Values(lo.MapToSlice(d.Groups, func(_ string, names []string) clause.Expression {
 		return clause.IN{
 			Column: lo.Map(names, func(name string, _ int) string { return d.FieldColumn[name] }),
-			Values: lo.Map(d.Value, func(mapValue map[string]any, _ int) any {
-				return lo.Map(names, func(name string, _ int) any { return mapValue[name] })
+			Values: lo.FilterMap(d.Value, func(mapValue map[string]any, _ int) (any, bool) {
+				groupValues := lo.Map(names, func(name string, _ int) any { return mapValue[name] })
+				if inExprValidV2(groupValues) {
+					return groupValues, true
+				}
+				return nil, false
 			}),
 		}
 	}))(func(inExpr clause.Expression) bool {
@@ -133,6 +152,15 @@ func (d *rowsValues) exprIn() (exprIn clause.Expression, ok bool) {
 		return true
 	})
 	return
+}
+
+func inExprValidV2(sliceValues []any) bool {
+	if _, valZero := lo.Find(sliceValues, func(value any) bool {
+		return deps.ItemValueIsZero(value)
+	}); !valZero {
+		return true
+	}
+	return false
 }
 
 /*func (d *rowsValues) exprOr() (orExpr clause.Expression, orOk bool) {

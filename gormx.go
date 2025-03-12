@@ -11,16 +11,16 @@ import (
 )
 
 type Config struct {
-	PluginName  string            // no default value, "" will be error, plugin will not be effect
+	PluginName  string            // no default value, "" will be error
 	TagKey      string            // default: gormx
 	KnownModels []any             // must know your schemas(models, tables), or plugins will be folly
 	KnownScopes map[string]string // must know your isolation scope (tenant,user) fieldTag -> txKey, or plugins will do nothing on scopes
 
-	Option *Option
+	Option *Option // config Option can be overwritten by session, default all false
 
-	schCfg *schemas.Config
-	unqCfg *uniques.Config
-	tetCfg map[string]*tenants.Config
+	schCfg *schemas.Config            // schemas Config
+	unqCfg *uniques.Config            // uniques Config
+	tetCfg map[string]*tenants.Config // scopes Config
 }
 
 func (cfg *Config) Name() string {
