@@ -137,18 +137,23 @@ func (d *rowsValues) expr() (exprI clause.Expression, ok bool) {
 func (d *rowsValues) exprIn() (exprIn clause.Expression, ok bool) {
 	exprIn, ok = clauses.FalseExpr(), false
 	slices.Values(lo.MapToSlice(d.Groups, func(_ string, names []string) clause.Expression {
-		return clause.IN{
-			Column: lo.Map(names, func(name string, _ int) string { return d.FieldColumn[name] }),
-			Values: lo.FilterMap(d.Value, func(mapValue map[string]any, _ int) (any, bool) {
-				groupValues := lo.Map(names, func(name string, _ int) any { return mapValue[name] })
-				if inExprValidV2(groupValues) {
-					return groupValues, true
-				}
-				return nil, false
-			}),
+		if groupValueList := lo.FilterMap(d.Value, func(mapValue map[string]any, _ int) (any, bool) {
+			groupValues := lo.Map(names, func(name string, _ int) any { return mapValue[name] })
+			if inExprValidV2(groupValues) {
+				return groupValues, true
+			}
+			return nil, false
+		}); len(groupValueList) != 0 {
+			return clause.IN{
+				Column: lo.Map(names, func(name string, _ int) string { return d.FieldColumn[name] }),
+				Values: groupValueList,
+			}
 		}
+		return nil
 	}))(func(inExpr clause.Expression) bool {
-		exprIn, ok = clause.Or(exprIn, inExpr), true
+		if inExpr != nil {
+			exprIn, ok = clause.Or(exprIn, inExpr), true
+		}
 		return true
 	})
 	return

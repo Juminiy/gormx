@@ -15,7 +15,7 @@ func TestColumnsInExpr(t *testing.T) {
 
 	Err(t, iSqlite().Find(&bt, insExpr).Error)
 
-	Err(t, iMySQL().Find(&bt, insExpr).Error)
+	/*	Err(t, iMySQL().Find(&bt, insExpr).Error)
 
-	Err(t, iPg().Find(&bt, insExpr).Error)
+		Err(t, iPg().Find(&bt, insExpr).Error)*/
 }

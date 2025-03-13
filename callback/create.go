@@ -51,9 +51,12 @@ type setUpMapValues struct {
 
 func (setUp *setUpMapValues) Do(mapValue map[string]any) {
 	slices.All(setUp.sch.DBNames)(func(_ int, dbName string) bool {
-		if field := setUp.sch.FieldsByDBName[dbName]; !util.MapOk(mapValue, field.Name) &&
-			!util.MapOk(mapValue, dbName) &&
-			(!field.HasDefaultValue || field.DefaultValueInterface != nil) {
+		if field := setUp.sch.FieldsByDBName[dbName]; field.Creatable && // can create set
+			!util.MapOk(mapValue, field.Name) && // AND mapValue no fieldName
+			!util.MapOk(mapValue, dbName) && // AND mapValue no dbName
+			((field.HasDefaultValue && field.DefaultValueInterface != nil) || // AND(`default`)
+				field.NotNull || // AND (OR `not null`)
+				field.AutoCreateTime > 0 || field.AutoUpdateTime > 0) { // AND (OR autoCreateTime OR autoUpdateTime)
 			if v, ok := setUp.selectColumns[dbName]; (ok && v) ||
 				(!ok && (!setUp.restricted || field.AutoCreateTime > 0 || field.AutoUpdateTime > 0)) {
 				if field.DefaultValueInterface != nil {

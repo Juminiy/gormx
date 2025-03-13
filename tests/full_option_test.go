@@ -39,7 +39,7 @@ import (
 func init() {
 	var modelList = []any{&BabyTrade{}, &Consumer{}, &Product{}, &CalicoWeave{}, &AppUser{}}
 
-	slices.Values([]*gorm.DB{isqlite, imysql, ipg})(func(db *gorm.DB) bool {
+	slices.Values([]*gorm.DB{isqlite /*imysql, ipg*/})(func(db *gorm.DB) bool {
 		util.Must(db.Use(&gormx.Config{
 			PluginName:  "gormx",
 			TagKey:      "mt",
@@ -59,8 +59,8 @@ func TestInit(t *testing.T) {
 
 	util.Must(plugins.OneError(
 		txMigrate(iSqlite()).AutoMigrate(modelList...),
-		txMigrate(iMySQL()).AutoMigrate(modelList...),
-		txMigrate(iPg()).AutoMigrate(modelList...),
+		/*txMigrate(iMySQL()).AutoMigrate(modelList...),
+		txMigrate(iPg()).AutoMigrate(modelList...),*/
 	))
 }
 

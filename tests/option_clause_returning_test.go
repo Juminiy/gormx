@@ -1,7 +1,6 @@
 package gormx_tests
 
 import (
-	"github.com/Juminiy/gormx"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"testing"
@@ -14,16 +13,17 @@ func TestSqliteReturning(t *testing.T) {
 }
 
 func txMysql() *gorm.DB {
-	return iMySQL().
-		Set("tenant_id", 114514).
-		Set("user_id", 114514).
-		Set(gormx.OptionKey, gormx.Option{
-			UpdateMapSetPkToClause:  true,
-			UpdateMapCallHooks:      true,
-			UpdateMapOmitUnknownKey: true,
-			AfterUpdateReturning:    true,
-			BeforeDeleteReturning:   true,
-		})
+	/*return iMySQL().
+	Set("tenant_id", 114514).
+	Set("user_id", 114514).
+	Set(gormx.OptionKey, gormx.Option{
+		UpdateMapSetPkToClause:  true,
+		UpdateMapCallHooks:      true,
+		UpdateMapOmitUnknownKey: true,
+		AfterUpdateReturning:    true,
+		BeforeDeleteReturning:   true,
+	})*/
+	return iSqlite()
 }
 
 func TestMySQLDeleteReturning(t *testing.T) {

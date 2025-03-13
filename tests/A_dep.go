@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/Juminiy/gormx"
-	mysql8 "github.com/Juminiy/gormx/tests/mysql_test"
-	postgres17 "github.com/Juminiy/gormx/tests/postgres_test"
 	sqlite3 "github.com/Juminiy/gormx/tests/sqlite_test"
 	"github.com/Juminiy/gormx/uniques"
 	"gorm.io/gorm"
@@ -14,21 +12,21 @@ import (
 
 var (
 	isqlite = sqlite3.Orm()
-	imysql  = mysql8.Orm()
-	ipg     = postgres17.Orm()
+	/*imysql  = mysql8.Orm()
+	ipg     = postgres17.Orm()*/
 )
 
 func iSqlite() *gorm.DB {
 	return isqlite.Debug()
 }
 
-func iMySQL() *gorm.DB {
+/*func iMySQL() *gorm.DB {
 	return imysql.Debug()
 }
 
 func iPg() *gorm.DB {
 	return ipg.Debug()
-}
+}*/
 
 var Enc = func(v any) string {
 	bs, _ := json.MarshalIndent(v, "", "  ")

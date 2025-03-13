@@ -12,25 +12,25 @@ import (
 
 type Order struct {
 	gorm.Model
-	Serial          string      `gorm:"primaryKey" x:"unique"`
-	UserID          uint        `gorm:"index" x:"user"`
-	TenantID        uint        `gorm:"index" x:"tenant"`
-	AmountTotal     int64       `gorm:"not null" x:"unique:fee"`
-	AmountDiscount  int64       `gorm:"not null" x:"unique:fee"`
-	ShippingFee     int64       `gorm:"not null" x:"unique:fee,logistics"`
-	AmountActual    int64       `gorm:"not null" x:"unique:fee"`
-	OrderType       OrderType   `gorm:"not null"`
-	OrderStatus     OrderStatus `gorm:"not null"`
-	PayTime         sql.NullTime
-	PayMethod       PayMethod `gorm:"not null"`
-	ReceiverName    string    `gorm:"not null" x:"unique:receiver"`
-	ReceiverPhone   string    `gorm:"not null" x:"unique:receiver"`
-	ReceiverAddress string    `gorm:"not null" x:"unique:receiver"`
-	ShippedTime     sql.NullTime
-	FinishedTime    sql.NullTime
-	LogisticsID     uint   `gorm:"not null" x:"unique:logistics"`
-	LogisticsName   string `gorm:"not null" x:"unique:logistics"`
-	ExtrasInfo      sql.NullString
+	Serial          string         `gorm:"primaryKey" x:"unique" json:",omitempty"`
+	UserID          uint           `gorm:"index" x:"user" json:",omitempty"`
+	TenantID        uint           `gorm:"index" x:"tenant" json:",omitempty"`
+	AmountTotal     int64          `gorm:"not null" x:"unique:fee" json:",omitempty"`
+	AmountDiscount  int64          `gorm:"not null" x:"unique:fee" json:",omitempty"`
+	ShippingFee     int64          `gorm:"not null" x:"unique:fee,logistics" json:",omitempty"`
+	AmountActual    int64          `x:"unique:-" json:",omitempty"`
+	OrderType       OrderType      `gorm:"not null" json:",omitempty"`
+	OrderStatus     OrderStatus    `json:",omitempty"`
+	PayTime         sql.NullTime   `json:",omitempty"`
+	PayMethod       PayMethod      `json:",omitempty"`
+	ReceiverName    string         `x:"unique:receiver" json:",omitempty"`
+	ReceiverPhone   string         `x:"unique:receiver" json:",omitempty"`
+	ReceiverAddress string         `x:"unique:receiver" json:",omitempty"`
+	ShippedTime     sql.NullTime   `json:",omitempty"`
+	FinishedTime    sql.NullTime   `json:",omitempty"`
+	LogisticsID     uint           `x:"unique:logistics" json:",omitempty"`
+	LogisticsName   string         `x:"unique:logistics" json:",omitempty"`
+	ExtrasInfo      sql.NullString `json:",omitempty"`
 }
 
 func (o *Order) BeforeCreate(tx *gorm.DB) error {
@@ -40,12 +40,34 @@ func (o *Order) BeforeCreate(tx *gorm.DB) error {
 	return nil
 }
 
+func (o *Order) AfterCreate(tx *gorm.DB) error {
+	o.UserID = 0
+	return nil
+}
+
+func (o *Order) JSONString() string {
+	b, _ := json.MarshalIndent(o, "", "  ")
+	return string(b)
+}
+
 func RandomOrder() *Order {
 	return &Order{
-		AmountTotal:    int64(gofakeit.IntRange(1000, 10000)),
-		AmountDiscount: int64(gofakeit.IntRange(1, 100)),
-		ShippingFee:    int64(gofakeit.IntRange(1, 500)),
-		OrderType:      OrderType(gofakeit.IntRange(1, 4)),
+		AmountTotal:     int64(gofakeit.IntRange(1000, 10000)),
+		AmountDiscount:  int64(gofakeit.IntRange(1, 100)),
+		ShippingFee:     int64(gofakeit.IntRange(1, 500)),
+		OrderType:       OrderType(gofakeit.IntRange(1, 4)),
+		ReceiverName:    gofakeit.Name(),
+		ReceiverPhone:   gofakeit.Phone(),
+		ReceiverAddress: gofakeit.Address().Address,
+	}
+}
+
+func RandomOrderMap() map[string]any {
+	return map[string]any{
+		"AmountTotal":    int64(gofakeit.IntRange(1000, 10000)),
+		"AmountDiscount": int64(gofakeit.IntRange(1, 100)),
+		"ShippingFee":    int64(gofakeit.IntRange(1, 500)),
+		"OrderType":      OrderType(gofakeit.IntRange(1, 4)),
 	}
 }
 

@@ -36,3 +36,7 @@ Reinforced for gorm, aims to be best partner of gorm, rich plugins and toolkits 
 > 2025.03.12
 1. Full Feature Test in pkg: tests/tests_v2
 2. ⚠️(NotTest)Feature report: uniques IN columns expression support omitempty value
+
+> 2025.03.13 
+1. ✅(2025.03.11)(FixedBug report): uniques IN columns list, skip all-null-expr groups
+2. ✅(2025.03.11)(Feature report): create map not null Constraint, set a default or go-zero value
