@@ -40,3 +40,6 @@ Reinforced for gorm, aims to be best partner of gorm, rich plugins and toolkits 
 > 2025.03.13 
 1. ✅(2025.03.11)(FixedBug report): uniques IN columns list, skip all-null-expr groups
 2. ✅(2025.03.11)(Feature report): create map not null Constraint, set a default or go-zero value
+
+> 2025.03.14
+1. Feature report(Plugin Tests Failed): array or slice of struct delete by Pk skip check in clauses.
