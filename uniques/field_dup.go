@@ -1,7 +1,6 @@
 package uniques
 
 import (
-	"github.com/Juminiy/gormx/callback"
 	"github.com/Juminiy/gormx/clauses"
 	"github.com/Juminiy/gormx/deps"
 	"github.com/Juminiy/kube/pkg/util"
@@ -211,15 +210,17 @@ func (d *FieldDup) doCount(tx *gorm.DB, exprI clause.Expression, forUpdate bool)
 	// where clause for update 4. NOT(tx.Clause)
 	if forUpdate {
 		var exprs []clause.Expression
-		if expr, ok := callback.BeforeUpdateGetClausePk(tx.Statement.ReflectValue, tx.Statement); ok {
+		// implicit where clause (primaryKey)
+		if expr, ok := clauses.StmtGetPrimaryKeyNotZeroClause(tx.Statement); ok {
 			exprs = append(exprs, expr)
 		}
+		// explicit where clause
 		if txClause, ok := clauses.WhereClause(tx); ok {
 			exprs = append(exprs, txClause)
 		}
 		if len(exprs) > 0 {
 			ntx.Statement.AddClause(clause.Where{
-				Exprs: []clause.Expression{clause.Not(append(exprs, clause.Expression(clauses.TrueExpr()))...)},
+				Exprs: []clause.Expression{clause.Not(exprs...)},
 			})
 		}
 	}

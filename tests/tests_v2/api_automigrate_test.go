@@ -2,6 +2,7 @@ package gormx_testv2
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/Juminiy/gormx"
 	"github.com/Juminiy/gormx/callback"
 	sqlite3 "github.com/Juminiy/gormx/tests/sqlite_test"
@@ -12,8 +13,8 @@ import (
 )
 
 var (
-	isqlite  = sqlite3.Orm()
-	isqlite0 = sqlite3.Orm()
+	isqlite  = sqlite3.Orm() // isPlugin
+	isqlite0 = sqlite3.Orm() // noPlugin
 	//imysql     = mysql8.Orm()
 	//ipg        = postgres17.Orm()
 	_ModelList = []any{&Order{}}
@@ -74,12 +75,17 @@ func TestAAAInit(t *testing.T) {
 }
 
 func Err(t *testing.T, tx *gorm.DB) {
-	if tx.Error != nil {
-		t.Error(tx.Error)
+	if err := tx.Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			t.Log("not found any record, please insert some record")
+			return
+		}
+		t.Error(err)
 	}
 }
 
 func Enc(i any) string {
-	b, _ := json.MarshalIndent(i, "", "  ")
+	b, err := json.MarshalIndent(i, "", "  ")
+	util.Must(err)
 	return string(b)
 }

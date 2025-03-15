@@ -38,7 +38,8 @@ func (cfg *Config) AfterQuery(tx *gorm.DB) {
 	if !sCfg.AfterQueryShowTenant {
 		cfg.TenantsSeq(tx)(func(tenant *tenants.Tenant) bool {
 			deps.Ind(tx.Statement.ReflectValue).SetField(map[string]any{
-				tenant.Field.Name: nil, // FieldName
+				tenant.Field.Name:   nil, // FieldName
+				tenant.Field.DBName: nil, // DBName
 			})
 			return true
 		})

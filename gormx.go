@@ -104,10 +104,11 @@ type Option struct {
 	UpdateMapCallHooks       bool // effect on update map
 	AfterUpdateReturning     bool // effect on update, use with clause.Returning, when database not support Returning
 
-	BeforeQueryOmitField  bool // effect on query, use with tag `gorm:"->:false"`
-	AfterQueryShowTenant  bool // effect on query
-	AfterFindMapCallHooks bool // effect on query map
-	QueryDynamicSQL       bool // effect on query
+	BeforeQueryOmitField bool // effect on query, use with tag `gorm:"->:false"`
+	AfterQueryShowTenant bool // effect on query
+	QueryDynamicSQL      bool // effect on query
+	// Deprecated
+	AfterFindMapCallHooks bool // effect on query map, after the evaluation, it's not a common and general case, but also to waste of time
 
 	WriteClauseToRowOrRaw bool // effect on row or raw
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"time"
 )
 
 type Order struct {
@@ -50,6 +51,20 @@ func (o *Order) JSONString() string {
 	return string(b)
 }
 
+func (o *Order) SetPayInfo() *Order {
+	o.PayTime = sql.NullTime{Time: time.Now().Add(util.DurationDay), Valid: true}
+	o.PayMethod = PayMethod(gofakeit.IntRange(1, 4))
+	o.OrderStatus = StatusPaid
+	return o
+}
+
+func (o *Order) SetShipInfo() *Order {
+	o.ShippedTime = sql.NullTime{Time: time.Now().Add(util.DurationDay * 7), Valid: true}
+	o.LogisticsID = gofakeit.UintRange(1<<10, 1<<16)
+	o.LogisticsName = gofakeit.Company()
+	return o
+}
+
 func RandomOrder() *Order {
 	return &Order{
 		AmountTotal:     int64(gofakeit.IntRange(1000, 10000)),
@@ -71,9 +86,19 @@ func RandomOrderMap() map[string]any {
 	}
 }
 
+func RandomShipMap(shipFee int64) map[string]any {
+	return map[string]any{
+		"shipped_time":   time.Now().Add(util.DurationDay * 7),
+		"shipping_fee":   shipFee,
+		"logistics_id":   gofakeit.UintRange(1<<10, 1<<16),
+		"logistics_name": gofakeit.Company(),
+	}
+}
+
 type OrderType int
 
 const (
+	TypeInvalid OrderType = 0
 	TypeRegular OrderType = 1
 	TypeGroup   OrderType = 2
 	TypeFlash   OrderType = 3
@@ -101,15 +126,17 @@ func (t OrderType) Valid() bool {
 	return util.ElemIn(t, TypeRegular, TypeGroup, TypeFlash, TypeVirtual)
 }
 
+func (t OrderType) Legal() bool { return t.Valid() || t == TypeInvalid }
+
 func (t *OrderType) UnmarshalJSON(b []byte) error {
-	if err := json.Unmarshal(b, &t); err != nil || !t.Valid() {
+	if err := json.Unmarshal(b, &t); err != nil || !t.Legal() {
 		return ErrOrderType
 	}
 	return nil
 }
 
 func (t OrderType) MarshalJSON() ([]byte, error) {
-	if t.Valid() {
+	if t.Legal() {
 		return json.Marshal(t.String())
 	}
 	return nil, ErrOrderType
@@ -118,6 +145,7 @@ func (t OrderType) MarshalJSON() ([]byte, error) {
 type OrderStatus int
 
 const (
+	StatusInvalid   OrderStatus = 0
 	StatusWaiting   OrderStatus = 1
 	StatusPaid      OrderStatus = 2
 	StatusShipping  OrderStatus = 3
@@ -151,15 +179,19 @@ func (t OrderStatus) Valid() bool {
 	return util.ElemIn(t, StatusWaiting, StatusPaid, StatusShipping, StatusFinished, StatusCancel, StatusRefunding)
 }
 
+func (t OrderStatus) Legal() bool {
+	return t.Valid() || t == StatusInvalid
+}
+
 func (t *OrderStatus) UnmarshalJSON(b []byte) error {
-	if err := json.Unmarshal(b, &t); err != nil || !t.Valid() {
+	if err := json.Unmarshal(b, &t); err != nil || !t.Legal() {
 		return ErrOrderStatus
 	}
 	return nil
 }
 
 func (t OrderStatus) MarshalJSON() ([]byte, error) {
-	if t.Valid() {
+	if t.Legal() {
 		return json.Marshal(t.String())
 	}
 	return nil, ErrOrderStatus
@@ -168,6 +200,7 @@ func (t OrderStatus) MarshalJSON() ([]byte, error) {
 type PayMethod int
 
 const (
+	MethodInvalid      PayMethod = 0
 	MethodAlipay       PayMethod = 1
 	MethodWechatPay    PayMethod = 2
 	MethodUnionPay     PayMethod = 3
@@ -195,15 +228,19 @@ func (t PayMethod) Valid() bool {
 	return util.ElemIn(t, MethodAlipay, MethodWechatPay, MethodUnionPay, MethodDeliveryCash)
 }
 
+func (t PayMethod) Legal() bool {
+	return t.Valid() || t == MethodInvalid
+}
+
 func (t *PayMethod) UnmarshalJSON(b []byte) error {
-	if err := json.Unmarshal(b, &t); err != nil || !t.Valid() {
+	if err := json.Unmarshal(b, &t); err != nil || !t.Legal() {
 		return ErrPayMethod
 	}
 	return nil
 }
 
 func (t PayMethod) MarshalJSON() ([]byte, error) {
-	if t.Valid() {
+	if t.Legal() {
 		return json.Marshal(t.String())
 	}
 	return nil, ErrPayMethod

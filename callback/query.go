@@ -20,7 +20,7 @@ func BeforeQueryOmit(tx *gorm.DB) {
 	}
 }
 
-// TODO: need to fix AfterFindMap
+// Deprecated
 func AfterFindMapCallHook(db *gorm.DB) {
 	if sch, ok := hasSchemaAndDestIsMap(db); ok &&
 		!db.Statement.SkipHooks && sch.AfterFind {
@@ -32,6 +32,6 @@ func AfterFindMapCallHook(db *gorm.DB) {
 			}
 			return false
 		})
-		scanModelToDestMap(db)
+		/*scanModelToDestMap(db)*/
 	}
 }
