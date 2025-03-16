@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"github.com/Juminiy/gormx/clauses"
 	"github.com/Juminiy/kube/pkg/util"
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/google/uuid"
@@ -43,6 +44,13 @@ func (o *Order) BeforeCreate(tx *gorm.DB) error {
 
 func (o *Order) AfterCreate(tx *gorm.DB) error {
 	o.UserID = 0
+	return nil
+}
+
+func (o *Order) BeforeUpdate(tx *gorm.DB) error {
+	if serial, ok := tx.Get("serial"); ok {
+		tx.Statement.AddClause(clauses.ClauseColumnEq("serial", serial))
+	}
 	return nil
 }
 

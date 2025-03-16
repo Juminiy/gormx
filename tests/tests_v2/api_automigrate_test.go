@@ -15,7 +15,8 @@ import (
 var (
 	isqlite  = sqlite3.Orm() // isPlugin
 	isqlite0 = sqlite3.Orm() // noPlugin
-	//imysql     = mysql8.Orm()
+	//imysql   = mysql8.Orm()  // isPlugin
+	//imysql0  = mysql8.Orm()  // noPlugin
 	//ipg        = postgres17.Orm()
 	_ModelList = []any{&Order{}}
 )
@@ -37,18 +38,22 @@ func iSUserTenant() *gorm.DB {
 	return iSqlite().Set("user_id", 666).Set("tenant_id", 888)
 }
 
-/*// mysql
-func iInnoDB() *gorm.DB {
+// mysql
+/*func iInnoDB() *gorm.DB {
 	return imysql.Debug()
 }
 
+func iInnoDB0() *gorm.DB {
+	return imysql0.Debug()
+}*/
+
 // postgresql
-func iPG() *gorm.DB {
+/*func iPG() *gorm.DB {
 	return ipg.Debug()
 }*/
 
 func init() {
-	slices.Values([]*gorm.DB{isqlite /*imysql, ipg*/})(func(db *gorm.DB) bool {
+	slices.Values([]*gorm.DB{isqlite /*imysql*/ /* ipg*/})(func(db *gorm.DB) bool {
 		util.Must(db.Use(&gormx.Config{
 			PluginName:  "gormx",
 			TagKey:      "x",

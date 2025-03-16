@@ -5,7 +5,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// TODO: fix
 // OmitEmptyClause
 // more to expansion
 func OmitEmptyClause(tx *gorm.DB) {

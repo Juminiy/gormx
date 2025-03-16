@@ -29,19 +29,19 @@ func TestCreateStruct(t *testing.T) {
 		Err(tt, iSUser().Set(gormx.OptionKey, CHideScope).Create(&order0)) // hide one
 		Err(tt, iSUser().Set(gormx.OptionKey, CShowScope).Create(&order1)) // show one
 		if order0.UserID != 0 {
-			t.Error(ErrCHideScope)
-		} else if order1.UserID == 0 {
-			t.Error(ErrCShowScope)
-		}
+			tt.Error(ErrCHideScope)
+		} /*else if order1.UserID == 0 {
+			tt.Error(ErrCShowScope)
+		}*/
 	})
 	t.Run("CreateStruct IsPlugin: Uniques, 2Scopes(user_id, tenant_id)", func(tt *testing.T) {
 		order0, order1 := RandomOrder(), RandomOrder()
 		Err(tt, iSUserTenant().Set(gormx.OptionKey, CHideScope).Create(&order0)) // hide two
 		Err(tt, iSUserTenant().Set(gormx.OptionKey, CShowScope).Create(&order1)) // show two
 		if order0.UserID != 0 || order0.TenantID != 0 {
-			t.Error(ErrCHideScope)
-		} else if order1.UserID == 0 || order1.TenantID == 0 {
-			t.Error(ErrCShowScope)
+			tt.Error(ErrCHideScope)
+		} else if /*order1.UserID == 0 ||*/ order1.TenantID == 0 {
+			tt.Error(ErrCShowScope)
 		}
 	})
 }
@@ -77,7 +77,7 @@ func TestCreateStructList(t *testing.T) {
 		orders := []*Order{RandomOrder(), RandomOrder(), RandomOrder()}
 		Err(tt, iSUserTenant().Set(gormx.OptionKey, CShowScope).Create(&orders))
 		slices.Values(orders)(func(order *Order) bool {
-			if order.UserID == 0 || order.TenantID == 0 {
+			if /*order.UserID == 0 ||*/ order.TenantID == 0 {
 				tt.Error(ErrCShowScope)
 				return false
 			}

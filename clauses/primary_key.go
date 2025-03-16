@@ -17,6 +17,7 @@ func destHasPrimaryKeyNotZero(stmt *gorm.Statement) bool {
 	switch stmt.ReflectValue.Kind() {
 	case reflect.Map:
 		return destKindIsMapAndHasPrimaryKeyNotZero(stmt) ||
+			modelKindIsStructAndHasPrimaryKeyNotZero(stmt) ||
 			stmtHasPrimaryKeyNotZero(stmt)
 
 	case reflect.Struct, reflect.Array, reflect.Slice:
@@ -55,7 +56,7 @@ func stmtPrimaryKeyClause(stmt *gorm.Statement) (clauseI clause.Expression, ok b
 			return clause.IN{Column: column, Values: values}, true
 		}
 
-		if /*stmt.ReflectValue.CanAddr() && */ stmt.Dest != stmt.Model && stmt.Model != nil {
+		if stmt.ReflectValue.CanAddr() && stmt.Dest != stmt.Model && stmt.Model != nil {
 			_, queryValues = schema.GetIdentityFieldValuesMap(stmt.Context, reflect.ValueOf(stmt.Model), stmt.Schema.PrimaryFields)
 			column, values = schema.ToQueryValues(stmt.Table, stmt.Schema.PrimaryFieldDBNames, queryValues)
 			if len(values) > 0 {
@@ -73,6 +74,20 @@ func destKindIsStructAndHasPrimaryKeyNotZero(stmt *gorm.Statement) bool {
 			stmt.ReflectValue.Type() == stmt.Schema.ModelType {
 			for _, primaryField := range stmt.Schema.PrimaryFields {
 				if _, isZero := primaryField.ValueOf(stmt.Context, stmt.ReflectValue); !isZero {
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
+func modelKindIsStructAndHasPrimaryKeyNotZero(stmt *gorm.Statement) bool {
+	if stmt.SQL.Len() == 0 {
+		if modelRv := deps.IndI(stmt.Model); modelRv.T.Kind() == reflect.Struct &&
+			modelRv.Type == stmt.Schema.ModelType {
+			for _, primaryField := range stmt.Schema.PrimaryFields {
+				if _, isZero := primaryField.ValueOf(stmt.Context, modelRv.Value); !isZero {
 					return true
 				}
 			}
