@@ -38,8 +38,8 @@ github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 h1:L/gRVlceqvL25
 github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161/go.mod h1:xomTg63KZ2rFqZQzSB4Vz2SUXa1BpHTVz9L5PTmPC4E=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
-github.com/Juminiy/kube v1.2.51 h1:Bpy7lOgKfMflSB2cShPs9RlGPlwGXD+JYD/br3gcyHM=
-github.com/Juminiy/kube v1.2.51/go.mod h1:FwlaPRq2HlPrYdgxGZ/wcBpo826EqJ/Z2+gZcsYyRkM=
+github.com/Juminiy/kube v1.2.52 h1:VqDxKzRV0IyEdvZKxyuJo8qY8rdDex/Zo5/3hH/43hI=
+github.com/Juminiy/kube v1.2.52/go.mod h1:FwlaPRq2HlPrYdgxGZ/wcBpo826EqJ/Z2+gZcsYyRkM=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
 github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=

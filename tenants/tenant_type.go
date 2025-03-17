@@ -2,6 +2,7 @@ package tenants
 
 import (
 	"database/sql"
+	"database/sql/driver"
 	"encoding/json"
 	"github.com/Juminiy/gormx/schemas"
 	"github.com/Juminiy/kube/pkg/util"
@@ -9,6 +10,19 @@ import (
 	"gorm.io/gorm/schema"
 )
 
+/*
+	func (t ID) QueryClauses(f *schema.Field) []clause.Interface {
+		return t.tenantID().Clauses(f)
+	}
+
+	func (t ID) UpdateClauses(f *schema.Field) []clause.Interface {
+		return t.tenantID().Clauses(f)
+	}
+
+	func (t ID) DeleteClauses(f *schema.Field) []clause.Interface {
+		return t.tenantID().Clauses(f)
+	}
+*/
 type ID sql.NullInt64
 
 func (t ID) MarshalJSON() ([]byte, error) {
@@ -30,16 +44,15 @@ func (t *ID) UnmarshalJSON(b []byte) error {
 	}
 }
 
-func (t ID) QueryClauses(f *schema.Field) []clause.Interface {
-	return t.tenantID().Clauses(f)
+func (t *ID) Scan(value any) error {
+	return (*sql.NullInt64)(t).Scan(value)
 }
 
-func (t ID) UpdateClauses(f *schema.Field) []clause.Interface {
-	return t.tenantID().Clauses(f)
-}
-
-func (t ID) DeleteClauses(f *schema.Field) []clause.Interface {
-	return t.tenantID().Clauses(f)
+func (t ID) Value() (driver.Value, error) {
+	if !t.Valid {
+		return nil, nil
+	}
+	return t.Int64, nil
 }
 
 func (t ID) tenantID() tenantID {
@@ -49,6 +62,19 @@ func (t ID) tenantID() tenantID {
 	}
 }
 
+/*
+	func (t HideID) QueryClauses(f *schema.Field) []clause.Interface {
+		return ID(t).tenantID().Clauses(f)
+	}
+
+	func (t HideID) UpdateClauses(f *schema.Field) []clause.Interface {
+		return ID(t).tenantID().Clauses(f)
+	}
+
+	func (t HideID) DeleteClauses(f *schema.Field) []clause.Interface {
+		return ID(t).tenantID().Clauses(f)
+	}
+*/
 type HideID ID
 
 func (t HideID) MarshalJSON() ([]byte, error) {
@@ -59,18 +85,30 @@ func (t *HideID) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-func (t HideID) QueryClauses(f *schema.Field) []clause.Interface {
-	return ID(t).tenantID().Clauses(f)
+func (t *HideID) Scan(value any) error {
+	return (*sql.NullInt64)(t).Scan(value)
 }
 
-func (t HideID) UpdateClauses(f *schema.Field) []clause.Interface {
-	return ID(t).tenantID().Clauses(f)
+func (t HideID) Value() (driver.Value, error) {
+	if !t.Valid {
+		return nil, nil
+	}
+	return t.Int64, nil
 }
 
-func (t HideID) DeleteClauses(f *schema.Field) []clause.Interface {
-	return ID(t).tenantID().Clauses(f)
-}
+/*
+	func (t SID) QueryClauses(f *schema.Field) []clause.Interface {
+		return t.tenantID().Clauses(f)
+	}
 
+	func (t SID) UpdateClauses(f *schema.Field) []clause.Interface {
+		return t.tenantID().Clauses(f)
+	}
+
+	func (t SID) DeleteClauses(f *schema.Field) []clause.Interface {
+		return t.tenantID().Clauses(f)
+	}
+*/
 type SID sql.NullString
 
 func (t SID) MarshalJSON() ([]byte, error) {
@@ -92,16 +130,15 @@ func (t *SID) UnmarshalJSON(b []byte) error {
 	}
 }
 
-func (t SID) QueryClauses(f *schema.Field) []clause.Interface {
-	return t.tenantID().Clauses(f)
+func (t *SID) Scan(value any) error {
+	return (*sql.NullString)(t).Scan(value)
 }
 
-func (t SID) UpdateClauses(f *schema.Field) []clause.Interface {
-	return t.tenantID().Clauses(f)
-}
-
-func (t SID) DeleteClauses(f *schema.Field) []clause.Interface {
-	return t.tenantID().Clauses(f)
+func (t SID) Value() (driver.Value, error) {
+	if !t.Valid {
+		return nil, nil
+	}
+	return t.String, nil
 }
 
 func (t SID) tenantID() tenantID {

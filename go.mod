@@ -3,7 +3,7 @@ module github.com/Juminiy/gormx
 go 1.24.0
 
 require (
-	github.com/Juminiy/kube v1.2.51
+	github.com/Juminiy/kube v1.2.52
 	github.com/brianvoe/gofakeit/v7 v7.1.2
 	github.com/google/uuid v1.6.0
 	github.com/pkg/errors v0.9.1
