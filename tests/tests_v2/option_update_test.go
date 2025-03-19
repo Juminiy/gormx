@@ -1,8 +1,10 @@
 package gormx_testv2
 
 import (
+	"database/sql"
 	"github.com/Juminiy/gormx"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 	"maps"
 	"testing"
 	"time"
@@ -157,4 +159,71 @@ func TestUpdateMapReturning(t *testing.T) {
 			Clauses(clause.Returning{}).Updates(updateDest))
 		t.Log(Enc(updateDest))
 	})*/
+}
+
+var UOptLock = gormx.Option{UpdateOptimisticLock: true, UpdateMapSetPkToClause: true}
+
+func updateSkipTxn() *gorm.DB {
+	return iSqlite().Session(&gorm.Session{NewDB: true, SkipDefaultTransaction: true})
+}
+
+func TestUpdateMapOptLock(t *testing.T) {
+	t.Run("IsPlugin, No Hide Pk Clause", func(tt *testing.T) {
+		order := RandomOrder()
+		Err(tt, updateSkipTxn().Create(&order))
+		Err(tt, updateSkipTxn().Set(gormx.OptionKey, UOptLock).
+			Where("id = ?", order.ID).Updates(&Order{PayTime: sql.NullTime{
+			Time:  time.Now(),
+			Valid: true,
+		}}))
+		Err(tt, updateSkipTxn().Set(gormx.OptionKey, UOptLock).
+			Table(`tbl_order`).
+			Where("id = ?", order.ID).Updates(map[string]any{
+			"pay_time": time.Now(),
+		}))
+	})
+	t.Run("IsPlugin, No Field Can Version", func(tt *testing.T) {
+
+	})
+	t.Run("IsPlugin, Updates(Struct) DestPk", func(tt *testing.T) {
+		order := RandomOrder()
+		Err(tt, updateSkipTxn().Create(&order))
+		Err(tt, updateSkipTxn().Set(gormx.OptionKey, UOptLock).
+			Updates(&Order{
+				Model: gorm.Model{ID: order.ID},
+				PayTime: sql.NullTime{
+					Time:  time.Now(),
+					Valid: true,
+				}}))
+	})
+	t.Run("IsPlugin, Updates(Map) DestPk", func(tt *testing.T) {
+		order := RandomOrder()
+		Err(tt, updateSkipTxn().Create(&order))
+		Err(tt, updateSkipTxn().Set(gormx.OptionKey, UOptLock).
+			Table(`tbl_order`).
+			Updates(map[string]any{
+				"id":       order.ID,
+				"pay_time": time.Now(),
+			}))
+	})
+	t.Run("IsPlugin, Model(Struct).Updates(Struct) ModelPk", func(tt *testing.T) {
+		order := RandomOrder()
+		Err(tt, updateSkipTxn().Create(&order))
+		Err(tt, updateSkipTxn().Set(gormx.OptionKey, UOptLock).
+			Model(&order).
+			Updates(&Order{
+				PayTime: sql.NullTime{
+					Time:  time.Now(),
+					Valid: true,
+				}}))
+	})
+	t.Run("IsPlugin, Model(Struct).Updates(Map) ModelPk", func(tt *testing.T) {
+		order := RandomOrder()
+		Err(tt, updateSkipTxn().Create(&order))
+		Err(tt, updateSkipTxn().Set(gormx.OptionKey, UOptLock).
+			Model(&order).
+			Updates(map[string]any{
+				"pay_time": time.Now(),
+			}))
+	})
 }

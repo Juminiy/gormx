@@ -29,6 +29,10 @@ func (cfg *Config) BeforeUpdate(tx *gorm.DB) {
 		callback.BeforeUpdateMapDeleteZeroValueColumn(tx)
 	}
 
+	if sCfg.UpdateOptimisticLock {
+		cfg.OptLockCfg().OptimisticLock(tx)
+	}
+
 	if sCfg.UpdateMapSetPkToClause {
 		callback.BeforeUpdateMapDeletePkAndSetPkToClause(tx)
 	}

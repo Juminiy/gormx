@@ -2,6 +2,7 @@ package gormx
 
 import (
 	"github.com/Juminiy/gormx/deps"
+	"github.com/Juminiy/gormx/optlock"
 	"github.com/Juminiy/gormx/schemas"
 	"github.com/Juminiy/gormx/tenants"
 	"github.com/Juminiy/gormx/uniques"
@@ -45,4 +46,8 @@ func (cfg *Config) AddTenantClauses(tx *gorm.DB, forQuery bool) {
 		}
 		return true
 	})
+}
+
+func (cfg *Config) OptLockCfg() *optlock.Config {
+	return cfg.optLockCfg
 }

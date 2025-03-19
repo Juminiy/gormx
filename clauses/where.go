@@ -42,5 +42,5 @@ func WhereClause(tx *gorm.DB) (whereClause clause.Where, ok bool) {
 
 func NoWhereClause(tx *gorm.DB) bool {
 	_, ok := WhereClause(tx)
-	return !ok && !destHasPrimaryKeyNotZero(tx.Statement)
+	return !ok && !StmtHasPrimaryKeyNotZero(tx.Statement)
 }

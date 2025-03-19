@@ -1,6 +1,7 @@
 package gormx
 
 import (
+	"github.com/Juminiy/gormx/optlock"
 	"github.com/Juminiy/gormx/plugins"
 	"github.com/Juminiy/gormx/schemas"
 	"github.com/Juminiy/gormx/tenants"
@@ -18,9 +19,10 @@ type Config struct {
 
 	Option *Option // config Option can be overwritten by session, default all false
 
-	schCfg *schemas.Config            // schemas Config
-	unqCfg *uniques.Config            // uniques Config
-	tetCfg map[string]*tenants.Config // scopes Config
+	schCfg     *schemas.Config            // schemas.Config
+	unqCfg     *uniques.Config            // uniques.Config
+	tetCfg     map[string]*tenants.Config // tenants.Config
+	optLockCfg *optlock.Config            // optlock.Config
 }
 
 func (cfg *Config) Name() string {
@@ -57,7 +59,11 @@ func (cfg *Config) Initialize(tx *gorm.DB) error {
 			TxSkipKey:    "skip_" + txKey,
 		}
 	})
-
+	cfg.optLockCfg = &optlock.Config{
+		Name:       cfg.PluginName + ":optlock",
+		TagKey:     cfg.TagKey,
+		TagOptLock: "version",
+	}
 	cfg.SchemasCfg().GraspSchema(tx, cfg.KnownModels...)
 	return plugins.OneError(
 		tx.Callback().Create().Before("gorm:before_create").
@@ -98,10 +104,11 @@ type Option struct {
 	BeforeDeleteReturning   bool // effect on delete, use with clause.Returning, when database not support Returning
 
 	AllowTenantGlobalUpdate  bool // effect on update, if false: raise error when clause only have (tenant) and (soft_delete)
-	UpdateMapOmitZeroElemKey bool // effect on update
-	UpdateMapOmitUnknownKey  bool // effect on update
-	UpdateMapSetPkToClause   bool // effect on update
+	UpdateMapOmitZeroElemKey bool // effect on update map
+	UpdateMapOmitUnknownKey  bool // effect on update map
+	UpdateMapSetPkToClause   bool // effect on update map
 	UpdateMapCallHooks       bool // effect on update map
+	UpdateOptimisticLock     bool // effect on update
 	AfterUpdateReturning     bool // effect on update, use with clause.Returning, when database not support Returning
 
 	BeforeQueryOmitField bool // effect on query, use with tag `gorm:"->:false"`

@@ -16,7 +16,7 @@ import (
 )
 
 type Config struct {
-	Name         string   // default: gormx:dup
+	Name         string   // default: gormx:uniques
 	TagKey       string   // default: gormx
 	TagUniqueKey string   // default: unique
 	TxKeys       []string // txKey: elem of gormx.Config .KnownScopes
@@ -211,7 +211,7 @@ func (d *FieldDup) doCount(tx *gorm.DB, exprI clause.Expression, forUpdate bool)
 	if forUpdate {
 		var exprs []clause.Expression
 		// implicit where clause (primaryKey)
-		if expr, ok := clauses.StmtGetPrimaryKeyNotZeroClause(tx.Statement); ok {
+		if expr, ok := clauses.StmtPrimaryKeyClause(tx.Statement); ok {
 			exprs = append(exprs, expr)
 		}
 		// explicit where clause

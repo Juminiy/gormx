@@ -16,7 +16,7 @@ Reinforced for gorm, aims to be best partner of gorm, rich plugins and toolkits 
 3. ~~⚠️(FeatureReported) AfterFind Hooks with Find Map: ~~map[string]any~~, *map[string]any, *[]map[string]any~~
 4. ✅(BugFix;2025.03.08) New Feature report: TenantID as a type do data isolation, can be overlapped: tenant_id, user_id, admin_id, operator_id, ...
 5. ⚠️New Plugin: codegen for gin+gorm, fiber+gorm short for `CodeGenerator`
-6. ⚠️New Plugin: optlock short for `OptimisticLock`
+6. ✅New Plugin: optlock short for `OptimisticLock`
 7. ✅Feature report: new type in tenants.ID, tenants.HideID
 
 > 2025.03.08
@@ -35,7 +35,7 @@ Reinforced for gorm, aims to be best partner of gorm, rich plugins and toolkits 
 
 > 2025.03.12
 1. Full Feature Test in pkg: tests/tests_v2
-2. ✅(Tested)⚠️(NotTest)Feature report: uniques IN columns expression support omitempty value
+2. ✅(Tested)Feature report: uniques IN columns expression support omitempty value
 
 > 2025.03.13 
 1. ✅(2025.03.14)(FixedBug report): uniques IN columns list, skip all-null-expr groups
@@ -57,5 +57,10 @@ Reinforced for gorm, aims to be best partner of gorm, rich plugins and toolkits 
    7. export the callback and clauses function to outside
 
 > 2025.03.17
-1. feature support tenants.ID, tenants.HideID, tenants.SID
-2. full test of uniques plugin with complex uniques
+1. ✅feature support tenants.ID, tenants.HideID, tenants.SID
+2. ⚠️full test of uniques plugin with complex uniques
+
+> 2025.03.19
+1. ✅optimistic lock by updatedAt is ok.
+2. ✅clause where infer by PrimaryKey much stronger.
+3. ⚠️need to test versionTag field.
