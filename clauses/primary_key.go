@@ -17,15 +17,13 @@ func StmtPrimaryKeyClause(stmt *gorm.Statement) (clauseI clause.Expression, ok b
 		return
 	} else if clauseI, ok = modelKindIsStructPrimaryKeyClause(stmt); ok {
 		return
+	} else if clauseI, ok = destKindIsStructPrimaryKeyClause(stmt); ok {
+		return
 	}
 	return
 }
 
 func StmtHasPrimaryKeyNotZero(stmt *gorm.Statement) bool {
-	return stmtHasPrimaryKeyNotZeroAdditionMap(stmt)
-}
-
-func stmtHasPrimaryKeyNotZeroAdditionMap(stmt *gorm.Statement) bool {
 	switch stmt.ReflectValue.Kind() {
 	case reflect.Map:
 		return destKindIsMapAndHasPrimaryKeyNotZero(stmt) ||
@@ -33,7 +31,9 @@ func stmtHasPrimaryKeyNotZeroAdditionMap(stmt *gorm.Statement) bool {
 			stmtHasPrimaryKeyNotZero(stmt)
 
 	case reflect.Struct, reflect.Array, reflect.Slice:
-		return stmtHasPrimaryKeyNotZero(stmt)
+		return destKindIsStructAndHasPrimaryKeyNotZero(stmt) ||
+			modelKindIsStructAndHasPrimaryKeyNotZero(stmt) ||
+			stmtHasPrimaryKeyNotZero(stmt)
 
 	default:
 		return false
@@ -116,17 +116,12 @@ func filterZeroValuesColumn(column any, values []any) (any, []any, bool) {
 
 // referred from: callbacks.BuildQuerySQL
 func destKindIsStructAndHasPrimaryKeyNotZero(stmt *gorm.Statement) bool {
-	if stmt.SQL.Len() == 0 {
-		if stmt.ReflectValue.Kind() == reflect.Struct &&
-			stmt.ReflectValue.Type() == stmt.Schema.ModelType {
-			for _, primaryField := range stmt.Schema.PrimaryFields {
-				if _, isZero := primaryField.ValueOf(stmt.Context, stmt.ReflectValue); !isZero {
-					return true
-				}
-			}
-		}
-	}
-	return false
+	_, ok := destKindIsStructPrimaryKeyClause(stmt)
+	return ok
+}
+
+func destKindIsStructPrimaryKeyClause(stmt *gorm.Statement) (clauseI clause.Expression, ok bool) {
+	return kindIsStructPrimaryKeyClause(stmt, stmt.Dest)
 }
 
 func modelKindIsStructAndHasPrimaryKeyNotZero(stmt *gorm.Statement) bool {
@@ -135,8 +130,12 @@ func modelKindIsStructAndHasPrimaryKeyNotZero(stmt *gorm.Statement) bool {
 }
 
 func modelKindIsStructPrimaryKeyClause(stmt *gorm.Statement) (clauseI clause.Expression, ok bool) {
+	return kindIsStructPrimaryKeyClause(stmt, stmt.Model)
+}
+
+func kindIsStructPrimaryKeyClause(stmt *gorm.Statement, stmtValue any) (clauseI clause.Expression, ok bool) {
 	if stmt.SQL.Len() == 0 {
-		if modelRv := deps.IndI(stmt.Model); modelRv.T.Kind() == reflect.Struct &&
+		if modelRv := deps.IndI(stmtValue); modelRv.T.Kind() == reflect.Struct &&
 			modelRv.Type == stmt.Schema.ModelType {
 			var columns []string
 			var values []any

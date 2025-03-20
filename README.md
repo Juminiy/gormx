@@ -63,4 +63,8 @@ Reinforced for gorm, aims to be best partner of gorm, rich plugins and toolkits 
 > 2025.03.19
 1. ✅optimistic lock by updatedAt is ok.
 2. ✅clause where infer by PrimaryKey much stronger.
-3. ⚠️need to test versionTag field.
+3. ✅need to test versionTag field.
+
+> 2025.03.20
+1. OptimisticLock full feature tested.
+2. clause where infer by PrimaryKey test passed.

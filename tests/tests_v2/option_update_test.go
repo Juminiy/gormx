@@ -3,8 +3,10 @@ package gormx_testv2
 import (
 	"database/sql"
 	"github.com/Juminiy/gormx"
+	"github.com/brianvoe/gofakeit/v7"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"gorm.io/plugin/soft_delete"
 	"maps"
 	"testing"
 	"time"
@@ -224,6 +226,46 @@ func TestUpdateMapOptLock(t *testing.T) {
 			Model(&order).
 			Updates(map[string]any{
 				"pay_time": time.Now(),
+			}))
+	})
+}
+
+type ChuckBlock struct {
+	soft_delete.DeletedAt
+	ID        uint  `gorm:"primaryKey;autoIncrement"`
+	CreatedAt int64 `gorm:"autoCreateTime:milli"`
+	Version   int64 `x:"version"`
+	IdleSize  int64
+	MaxSize   int64
+	MinSize   int64
+	WiseDesc  string
+}
+
+func RandomChuckBlock() *ChuckBlock {
+	return &ChuckBlock{
+		IdleSize: gofakeit.Int64(),
+		MaxSize:  gofakeit.Int64(),
+		MinSize:  gofakeit.Int64(),
+		WiseDesc: gofakeit.EmojiDescription(),
+	}
+}
+
+func TestUpdateMapOptLockByTag(t *testing.T) {
+	t.Run("Plugin Version Int", func(tt *testing.T) {
+		chuckBlk := RandomChuckBlock()
+		Err(t, updateSkipTxn().Create(&chuckBlk))
+		Err(t, updateSkipTxn().
+			Set(gormx.OptionKey, UOptLock).
+			Table(`tbl_chuck_block`).
+			Updates(map[string]any{
+				"id":       chuckBlk.ID,
+				"min_size": gofakeit.Int64(),
+			}))
+		Err(t, updateSkipTxn().
+			Set(gormx.OptionKey, UOptLock).
+			Updates(&ChuckBlock{
+				ID:      chuckBlk.ID,
+				MaxSize: gofakeit.Int64(),
 			}))
 	})
 }

@@ -39,3 +39,23 @@ WHERE `tbl_order`.`updated_at` = "2025-03-19 22:44:28.119"
 AND `tbl_order`.`deleted_at` IS NULL
 AND `id` = 543
 AND `serial` = "a91e3c27-4caa-4d9a-9e01-0e50e5430fe7"
+
+
+--- IntVersion Updates(Map)
+SELECT `version` FROM `tbl_chuck_block`
+WHERE (`id`) IN ((14)) AND `tbl_chuck_block`.`deleted_at` = 0
+
+UPDATE `tbl_chuck_block`
+SET `min_size`=5813099675382541171,`version`=version + 1
+WHERE `tbl_chuck_block`.`version` = 0
+AND `tbl_chuck_block`.`id` = 14
+AND `tbl_chuck_block`.`deleted_at` = 0
+
+--- IntVersion Updates(Struct)
+SELECT `version` FROM `tbl_chuck_block`
+WHERE (`id`) IN ((14)) AND `tbl_chuck_block`.`deleted_at` = 0
+
+UPDATE `tbl_chuck_block`
+SET `version`=2,`max_size`=6697225754786805900
+WHERE `tbl_chuck_block`.`version` = 1
+AND `tbl_chuck_block`.`deleted_at` = 0 AND `id` = 14

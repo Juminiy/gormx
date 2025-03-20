@@ -18,7 +18,7 @@ var (
 	//imysql   = mysql8.Orm()  // isPlugin
 	//imysql0  = mysql8.Orm()  // noPlugin
 	//ipg        = postgres17.Orm()
-	_ModelList = []any{&Order{}, &Product{}}
+	_ModelList = []any{&Order{}, &Product{}, &ChuckBlock{}}
 )
 
 // no plugin
