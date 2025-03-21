@@ -5,6 +5,7 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"github.com/Juminiy/gormx/schemas"
+	"github.com/Juminiy/gormx/schemas/types"
 	"github.com/Juminiy/kube/pkg/util"
 	"gorm.io/gorm/clause"
 	"gorm.io/gorm/schema"
@@ -33,7 +34,7 @@ func (t ID) MarshalJSON() ([]byte, error) {
 }
 
 func (t *ID) UnmarshalJSON(b []byte) error {
-	if schemas.NotValidJSONValue(util.Bytes2StringNoCopy(b)) {
+	if types.InValidJSONValue(util.Bytes2StringNoCopy(b)) {
 		t.Valid = false
 		return nil
 	} else if err := json.Unmarshal(b, &t.Int64); err == nil {
@@ -119,7 +120,7 @@ func (t SID) MarshalJSON() ([]byte, error) {
 }
 
 func (t *SID) UnmarshalJSON(b []byte) error {
-	if schemas.NotValidJSONValue(util.Bytes2StringNoCopy(b)) {
+	if types.InValidJSONValue(util.Bytes2StringNoCopy(b)) {
 		t.Valid = false
 		return nil
 	} else if err := json.Unmarshal(b, &t.String); err == nil {

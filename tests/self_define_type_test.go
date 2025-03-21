@@ -3,7 +3,7 @@ package gormx_tests
 import (
 	"database/sql"
 	"encoding/json"
-	"github.com/Juminiy/gormx/schemas"
+	"github.com/Juminiy/gormx/schemas/types"
 	"github.com/Juminiy/kube/pkg/util"
 	"testing"
 	"time"
@@ -91,7 +91,7 @@ func TestTimeAlias(t *testing.T) {
 	for i, timeRep := range vList {
 		var v struct {
 			ID   uint
-			Time schemas.Time
+			Time types.Time
 		}
 		err := json.Unmarshal([]byte(timeRep), &v)
 		if err != nil {

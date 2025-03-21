@@ -1,0 +1,19 @@
+1. declare Model
+
+1.1
+    - Create Struct
+    - Create StructList
+    - Upload Excel,CSV,JSON
+1.2
+    - Delete One
+    - Delete List
+    - Delete By Clause
+1.3
+    - Update One
+    - Update By Clause
+    - Update Field
+1.4
+    - Query One
+    - Query By Clause
+    - Query List
+    - Query List Page, Order, Search

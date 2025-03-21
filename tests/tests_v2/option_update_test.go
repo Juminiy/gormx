@@ -253,19 +253,59 @@ func RandomChuckBlock() *ChuckBlock {
 func TestUpdateMapOptLockByTag(t *testing.T) {
 	t.Run("Plugin Version Int", func(tt *testing.T) {
 		chuckBlk := RandomChuckBlock()
-		Err(t, updateSkipTxn().Create(&chuckBlk))
-		Err(t, updateSkipTxn().
+		Err(tt, updateSkipTxn().Create(&chuckBlk))
+		Err(tt, updateSkipTxn().
 			Set(gormx.OptionKey, UOptLock).
 			Table(`tbl_chuck_block`).
 			Updates(map[string]any{
 				"id":       chuckBlk.ID,
 				"min_size": gofakeit.Int64(),
 			}))
-		Err(t, updateSkipTxn().
+		Err(tt, updateSkipTxn().
 			Set(gormx.OptionKey, UOptLock).
 			Updates(&ChuckBlock{
 				ID:      chuckBlk.ID,
 				MaxSize: gofakeit.Int64(),
+			}))
+	})
+}
+
+func TestUpdateMapOptLockByTagFull(t *testing.T) {
+	t.Run("IsPlugin, Updates(Struct) DestPk", func(tt *testing.T) {
+		chuckBlk := RandomChuckBlock()
+		Err(tt, updateSkipTxn().Create(&chuckBlk))
+		Err(tt, updateSkipTxn().Set(gormx.OptionKey, UOptLock).
+			Updates(&ChuckBlock{
+				ID:      chuckBlk.ID,
+				MinSize: gofakeit.Int64(),
+			}))
+	})
+	t.Run("IsPlugin, Updates(Map) DestPk", func(tt *testing.T) {
+		chuckBlk := RandomChuckBlock()
+		Err(tt, updateSkipTxn().Create(&chuckBlk))
+		Err(tt, updateSkipTxn().Set(gormx.OptionKey, UOptLock).
+			Table(`tbl_chuck_block`).
+			Updates(map[string]any{
+				"id":       chuckBlk.ID,
+				"max_size": gofakeit.Int64(),
+			}))
+	})
+	t.Run("IsPlugin, Model(Struct).Updates(Struct) ModelPk", func(tt *testing.T) {
+		chuckBlk := RandomChuckBlock()
+		Err(tt, updateSkipTxn().Create(&chuckBlk))
+		Err(tt, updateSkipTxn().Set(gormx.OptionKey, UOptLock).
+			Model(&chuckBlk).
+			Updates(&ChuckBlock{
+				IdleSize: gofakeit.Int64(),
+			}))
+	})
+	t.Run("IsPlugin, Model(Struct).Updates(Map) ModelPk", func(tt *testing.T) {
+		chuckBlk := RandomChuckBlock()
+		Err(tt, updateSkipTxn().Create(&chuckBlk))
+		Err(tt, updateSkipTxn().Set(gormx.OptionKey, UOptLock).
+			Model(&chuckBlk).
+			Updates(map[string]any{
+				"wise_desc": gofakeit.EmojiDescription(),
 			}))
 	})
 }

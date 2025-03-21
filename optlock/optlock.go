@@ -74,6 +74,10 @@ func (cfg *Config) OptimisticLock(tx *gorm.DB) bool {
 				})
 
 			case reflect.Struct:
+				if !tx.Statement.ReflectValue.CanAddr() {
+					tx.Logger.Error(tx.Statement.Context, "optimistic lock set version field value error: update dest value is Struct, must be PointerToStruct Or Map")
+					return false
+				}
 				if verField.DataType == schema.Int {
 					deps.Ind(tx.Statement.ReflectValue).StructSet(map[string]any{
 						verField.Name: cast.ToInt(verValue) + 1,
