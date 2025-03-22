@@ -49,7 +49,7 @@ Reinforced for gorm, aims to be best partner of gorm, rich plugins and toolkits 
 1. ✅CRUD all basic plugin feature full test passed.
 2. ⚠️TODO: plugin more complex case:
    1. uniques: different group combine; some group lack of all fields, some group lack of some fields
-   2. tenants: type string, *string, *uint, tenants.ID, tenants.HideID
+   2. ✅ tenants: type string, *string, *uint, tenants.ID, tenants.HideID
    3. dynamicsql: remove not known column but not to conflict with schemas basic.
    4. schemas: not to parse schemas when both model and dest is nil for .Raw(`table`).Scan(&dest)
    5. schemas: to test with schemas when model not conform with dest
@@ -68,3 +68,11 @@ Reinforced for gorm, aims to be best partner of gorm, rich plugins and toolkits 
 > 2025.03.20
 1. OptimisticLock full feature tested.
 2. clause where infer by PrimaryKey test passed.
+
+> 2025.03.22
+1. codegen
+2. enum value mapping (codegen)
+3. PrimaryKey generator when create
+4. field encrypt when create and update
+5. field sensitive
+6. TODO: test about types

@@ -18,7 +18,7 @@ var (
 	//imysql   = mysql8.Orm()  // isPlugin
 	//imysql0  = mysql8.Orm()  // noPlugin
 	//ipg        = postgres17.Orm()
-	_ModelList = []any{&Order{}, &Product{}, &ChuckBlock{}}
+	_ModelList = []any{&Order{}, &Product{}, &ChuckBlock{}, &BreadProduct{}, &BreadSale{}, &BreadMerchant{}}
 )
 
 // no plugin
@@ -59,9 +59,10 @@ func init() {
 			TagKey:      "x",
 			KnownModels: _ModelList,
 			KnownScopes: map[string]string{
-				"tenant":  "tenant_id",
-				"user":    "user_id",
-				"project": "project_id",
+				"tenant":   "tenant_id",
+				"user":     "user_id",
+				"project":  "project_id",
+				"merchant": "merchant_id",
 			},
 		}))
 		return true
