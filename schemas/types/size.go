@@ -30,9 +30,10 @@ func (s *BinarySize) UnmarshalJSON(b []byte) error {
 	} else if binI64, ok := binSi.AsInt64(); ok {
 		*s = BinarySize(binI64)
 		return nil
-	}
+	} // much bigger than
 
 	return ErrBinarySizeFromJSON
 }
 
 // TODO: replace Ki -> KB, Mi -> MB, Gi -> GB, add none_unit 'B'
+// TODO: cannot hold bigger eq than 1Ti size

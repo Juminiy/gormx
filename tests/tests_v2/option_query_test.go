@@ -144,6 +144,7 @@ func TestTypes(t *testing.T) {
 				err := tx.Model(sale).Updates(map[string]any{
 					"first_sale_time": time.Now(),
 					"last_sale_time":  time.Now(),
+					"sale_count":      gofakeit.IntRange(100, 2000),
 				}).Error
 				if err != nil {
 					return err
@@ -155,6 +156,27 @@ func TestTypes(t *testing.T) {
 			t.Error(err)
 		}
 	})
+	t.Run("Count SaleInfo", func(tt *testing.T) {
+		var cntSale int64
+		Err(tt, iSMrcht().Table(`tbl_bread_sale`).
+			Count(&cntSale))
+		t.Log(cntSale)
+	})
+	t.Run("Pluck SaleReleaseCount", func(tt *testing.T) {
+		var releaseCounts []int
+		Err(tt, iSMrcht().Table(`tbl_bread_sale`).
+			Pluck("release_count", &releaseCounts))
+	})
+	t.Run("Find saleSales", func(tt *testing.T) {
+		var saleSales []struct {
+			ID            uint
+			FirstSaleTime time.Time
+			LastSaleTime  time.Time
+			SaleCount     int64
+		}
+		Err(tt, iSMrcht().Table(`tbl_bread_sale`).
+			Find(&saleSales))
+	})
 }
 
 func TestParseTypes(t *testing.T) {
@@ -165,13 +187,33 @@ func TestParseTypes(t *testing.T) {
 	"TimeIn": "2025-03-22T22:21:50+08:00",
 	"CostCent": "3.33",
 	"BinSize": "10Mi"
-}`,
-		`{
+}`, `{
 	"TimeLine": 1742653292,
 	"TimeOff": 1742653292,
 	"TimeIn": 1742653292,
 	"CostCent": "3.33",
 	"BinSize": "10Mi"
+}`, `{
+	"CostCent": "1",
+	"BinSize": "920"
+}`, `{
+	"CostCent": "2.2",
+	"BinSize": "4Ki"
+}`, `{
+	"CostCent": "2.03",
+	"BinSize": "8Mi"
+}`, `{
+	"CostCent": "3.00",
+	"BinSize": "10Gi"
+}`, `{
+	"CostCent": "5.30",
+	"BinSize": "22Ti"
+}`, `{
+	"CostCent": "89.03",
+	"BinSize": "22Ti"
+}`, `{
+	"CostCent": "2222.22",
+	"BinSize": "22Ti"
 }`,
 	} {
 		var cur struct {

@@ -1,7 +1,7 @@
 package clauses
 
 import (
-	"github.com/Juminiy/kube/pkg/util"
+	"github.com/Juminiy/gormx/deps"
 	"github.com/samber/lo"
 	"gorm.io/gorm/clause"
 	"gorm.io/gorm/schema"
@@ -16,20 +16,20 @@ func LegalExpr(exprI clause.Expression) bool {
 func legalExpr(exprI clause.Expression) bool {
 	switch exprV := exprI.(type) {
 	case clause.Eq:
-		return !util.AssertZero(exprV.Column)
+		return !LegalColumn(exprV.Column)
 	case clause.Neq:
-		return !util.AssertZero(exprV.Column)
+		return !LegalColumn(exprV.Column)
 	case clause.Gt:
-		return !util.AssertZero(exprV.Column)
+		return !LegalColumn(exprV.Column)
 	case clause.Gte:
-		return !util.AssertZero(exprV.Column)
+		return !LegalColumn(exprV.Column)
 	case clause.Lt:
-		return !util.AssertZero(exprV.Column)
+		return !LegalColumn(exprV.Column)
 	case clause.Lte:
-		return !util.AssertZero(exprV.Column)
+		return !LegalColumn(exprV.Column)
 	case clause.Like:
-		return !util.AssertZero(exprV.Column) &&
-			!util.AssertZero(exprV.Value)
+		return !LegalColumn(exprV.Column) &&
+			!deps.ItemValueIsZero(exprV.Value)
 
 	case clause.Expr:
 		return len(exprV.SQL) != 0 &&
@@ -68,26 +68,26 @@ func NotZeroValueExpr(exprI clause.Expression) bool {
 func notZeroValueExpr(exprI clause.Expression) bool {
 	switch exprV := exprI.(type) {
 	case clause.Eq:
-		return !util.AssertZero(exprV.Column) &&
-			!util.AssertZero(exprV.Value)
+		return !LegalColumn(exprV.Column) &&
+			!deps.ItemValueIsZero(exprV.Value)
 	case clause.Neq:
-		return !util.AssertZero(exprV.Column) &&
-			!util.AssertZero(exprV.Value)
+		return !LegalColumn(exprV.Column) &&
+			!deps.ItemValueIsZero(exprV.Value)
 	case clause.Gt:
-		return !util.AssertZero(exprV.Column) &&
-			!util.AssertZero(exprV.Value)
+		return !LegalColumn(exprV.Column) &&
+			!deps.ItemValueIsZero(exprV.Value)
 	case clause.Gte:
-		return !util.AssertZero(exprV.Column) &&
-			!util.AssertZero(exprV.Value)
+		return !LegalColumn(exprV.Column) &&
+			!deps.ItemValueIsZero(exprV.Value)
 	case clause.Lt:
-		return !util.AssertZero(exprV.Column) &&
-			!util.AssertZero(exprV.Value)
+		return !LegalColumn(exprV.Column) &&
+			!deps.ItemValueIsZero(exprV.Value)
 	case clause.Lte:
-		return !util.AssertZero(exprV.Column) &&
-			!util.AssertZero(exprV.Value)
+		return !LegalColumn(exprV.Column) &&
+			!deps.ItemValueIsZero(exprV.Value)
 	case clause.Like:
-		return !util.AssertZero(exprV.Column) &&
-			!util.AssertZero(exprV.Value)
+		return !LegalColumn(exprV.Column) &&
+			!deps.ItemValueIsZero(exprV.Value)
 
 	case clause.Expr:
 		return len(exprV.SQL) != 0 &&
@@ -116,6 +116,29 @@ func notZeroValueExprList(exprIList []clause.Expression) bool {
 		lo.CountBy(exprIList, func(item clause.Expression) bool {
 			return notZeroValueExpr(item)
 		}) == len(exprIList)
+}
+
+// LegalColumn
+// referred to clause.Statement.QuoteTo
+func LegalColumn(column any) bool {
+	switch columnV := column.(type) {
+	case string:
+		return len(columnV) > 0
+	case []string:
+		_, columnLen0 := lo.Find(columnV, func(item string) bool {
+			return len(item) == 0
+		})
+		return !columnLen0
+	case clause.Column:
+		return len(columnV.Name) > 0
+	case []clause.Column:
+		_, columnLen0 := lo.Find(columnV, func(item clause.Column) bool {
+			return len(item.Name) == 0
+		})
+		return !columnLen0
+	default:
+		return false
+	}
 }
 
 func TrueExpr() clause.NamedExpr {

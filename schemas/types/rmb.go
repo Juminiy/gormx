@@ -66,6 +66,8 @@ func (c *RMBCent) Parse(centStr string) error {
 		return ErrParseRMBCent
 	} else if idxP := strings.IndexByte(centStr, '.'); idxP == 0 || idxP == len(centStr)-1 {
 		return ErrParseRMBCent
+	} else if idxP == -1 {
+		centY = centStr
 	} else { // if 0 < idxP && idxP < len(centStr)-1
 		centY, centC = centStr[:idxP], centStr[idxP+1:]
 	}

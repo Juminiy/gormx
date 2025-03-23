@@ -16,7 +16,7 @@ func WriteToRowOrRaw(tx *gorm.DB) {
 		where.Build(tx.Statement)
 	}
 
-	if orderBy, ok := clauses.ModifyOrderByClause(tx, clauses.LegalColumn); ok {
+	if orderBy, ok := clauses.ModifyOrderByClause(tx, clauses.LegalOrderByColumn); ok {
 		_, _ = tx.Statement.WriteString(" ORDER BY ")
 		orderBy.Build(tx.Statement)
 	}

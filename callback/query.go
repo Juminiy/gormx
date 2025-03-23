@@ -2,7 +2,6 @@ package callback
 
 import (
 	"gorm.io/gorm"
-	"gorm.io/gorm/callbacks"
 	"gorm.io/gorm/schema"
 	"slices"
 )
@@ -25,13 +24,13 @@ func AfterFindMapCallHook(db *gorm.DB) {
 	if sch, ok := hasSchemaAndDestIsMap(db); ok &&
 		!db.Statement.SkipHooks && sch.AfterFind {
 		/*setUpDestMapStmtModel(db, sch)*/
-		CallHooks(db, func(v any, tx *gorm.DB) bool {
+		/*CallHooks(db, func(v any, tx *gorm.DB) bool {
 			if afterFindI, ok := v.(callbacks.AfterFindInterface); ok {
 				_ = db.AddError(afterFindI.AfterFind(tx))
 				return true
 			}
 			return false
-		})
+		})*/
 		/*scanModelToDestMap(db)*/
 	}
 }

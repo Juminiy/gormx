@@ -66,13 +66,13 @@ Reinforced for gorm, aims to be best partner of gorm, rich plugins and toolkits 
 3. ✅need to test versionTag field.
 
 > 2025.03.20
-1. OptimisticLock full feature tested.
-2. clause where infer by PrimaryKey test passed.
+1. ✅OptimisticLock full feature tested.
+2. ✅clause where infer by PrimaryKey test passed.
 
 > 2025.03.22
 1. codegen
 2. enum value mapping (codegen)
-3. PrimaryKey generator when create
+3. PrimaryKey generator when create : can be replaced by BeforeCreate
 4. field encrypt when create and update
 5. field sensitive
-6. TODO: test about types
+6. ✅TODO: test about types
