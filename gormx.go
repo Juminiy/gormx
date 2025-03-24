@@ -88,6 +88,8 @@ func (cfg *Config) Initialize(tx *gorm.DB) error {
 
 		tx.Callback().Row().Before("gorm:row").
 			Register(plugins.CallbackName(cfg.PluginName, true, 'R'), cfg.BeforeRowOrRaw),
+		tx.Callback().Row().After("gorm:row").
+			Register(plugins.CallbackName(cfg.PluginName, false, 'R'), cfg.AfterRow),
 		tx.Callback().Raw().Before("gorm:raw").
 			Register(plugins.CallbackName(cfg.PluginName, true, 'E'), cfg.BeforeRowOrRaw),
 	)
@@ -114,6 +116,7 @@ type Option struct {
 	BeforeQueryOmitField bool // effect on query, use with tag `gorm:"->:false"`
 	AfterQueryShowTenant bool // effect on query
 	QueryDynamicSQL      bool // effect on query
+	ExplainQueryOrRow    bool // effect on query or row
 	// Deprecated
 	AfterFindMapCallHooks bool // effect on query map, after the evaluation, it's not a common and general case, but also to waste of time
 

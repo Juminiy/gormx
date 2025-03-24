@@ -4,6 +4,7 @@ import (
 	"github.com/Juminiy/gormx/callback"
 	"github.com/Juminiy/gormx/deps"
 	"github.com/Juminiy/gormx/dynamicsql"
+	"github.com/Juminiy/gormx/explain"
 	"github.com/Juminiy/gormx/tenants"
 	"gorm.io/gorm"
 )
@@ -43,5 +44,9 @@ func (cfg *Config) AfterQuery(tx *gorm.DB) {
 			})
 			return true
 		})
+	}
+
+	if sCfg.ExplainQueryOrRow {
+		explain.QueryOrRow(tx)
 	}
 }

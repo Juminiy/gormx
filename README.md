@@ -76,3 +76,37 @@ Reinforced for gorm, aims to be best partner of gorm, rich plugins and toolkits 
 4. field encrypt when create and update
 5. field sensitive
 6. ✅TODO: test about types
+
+> 2025.03.24
+1. ConfigOption: Explain in query or Row
+2. Fix Bug: callback.hasSchemaAndDestIsMap gorm only support three Map type, not derived type.
+3. Fix Bug: schemas.RMBCent Type Scan From DB
+Notice of best practice: 
+- MarshalJSON: realizeOf `json.Marshaler`
+  > Get Field Value From Memory, Write to ioBuffer
+  - Method receiver should be ValueReceiver
+  - json.Marshal must not be receiver itself, will be stackoverflow
+    - use typeCast receiver or it's Fields
+  - use EncodeByHand for Customization
+    - literal value: Number,null,true,false, can encode itself
+    - combine value: time or string or special, notice of escape: ""
+- UnmarshalJSON: realizeOf `json.Unmarshaler`
+  > Parse Field Value From []byte, Assign to Memory
+  - Method receiver must be PointerReceiver
+  - must not json.Unmarshal From receiver itself, will be stackoverflow
+  - should use another value unmarshal from bytes, assign to receiver itself by typeCast or FieldsFill
+  - should use receiver Fields to unmarshal from bytes
+- Scan: realizeOf `sql.Scanner`
+  > Read Field Value From Database, Assign to Memory
+  - Method receiver must be PointerReceiver
+  - typeAssert or typeCast isOk must return nil error
+  - typeAssert or typeCast notOk should return readable error
+  - typeAssert type should equal to ValueReturnType
+  - must assign src to receiver itself by typeCast or fieldsAssign
+  - if not change receiver anything, Scan Field From DB will nothing
+- Value: realizeOf `driver.Valuer`
+  > Get Field Value From Memory, Write to Database
+  - Method receiver should be ValueReceiver
+  - must not return receiver itself, will be stackoverflow
+  - value must typeCast or typeConvert to driver.Value
+  - return type should equal to ScanFromType

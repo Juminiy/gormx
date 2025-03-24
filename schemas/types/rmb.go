@@ -20,6 +20,7 @@ var ErrRMBCentValueFromJSON = ValueFromJSONError("RMBCent")
 func (c *RMBCent) Scan(src any) error {
 	if cent, ok := src.(int64); ok {
 		*c = RMBCent(cent)
+		return nil
 	}
 	return ErrRMBCentValueFromDB
 }

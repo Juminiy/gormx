@@ -9,3 +9,7 @@ import (
 func DialectorNotSupportReturningClause(dialector gorm.Dialector) bool {
 	return util.ElemIn(dialector.Name(), mysql.DefaultDriverName)
 }
+
+func DialectorName(dialector gorm.Dialector) string {
+	return dialector.Name()
+}

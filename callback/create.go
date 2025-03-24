@@ -1,7 +1,6 @@
 package callback
 
 import (
-	"github.com/Juminiy/gormx/deps"
 	"github.com/Juminiy/kube/pkg/util"
 	"github.com/samber/lo"
 	"gorm.io/gorm"
@@ -107,11 +106,18 @@ func AfterCreateSetAutoIncPkToMap(tx *gorm.DB) {
 	}
 }
 
+// dest.(type) must be map[string]any, *map[string]any, *[]map[string]any
 func hasSchemaAndDestIsMap(tx *gorm.DB) (sch *schema.Schema, ok bool) {
 	sch = tx.Statement.Schema
-	return sch,
-		sch != nil &&
-			deps.IndI(tx.Statement.Dest).T.Indirect().Kind() == reflect.Map
+	if sch == nil {
+		return
+	}
+	switch tx.Statement.Dest.(type) {
+	case map[string]any, *map[string]any, *[]map[string]any:
+		return sch, true
+	default:
+		return nil, false
+	}
 }
 
 // Replace Create Map Key:
