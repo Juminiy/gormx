@@ -79,7 +79,7 @@ func (t ID) tenantID() tenantID {
 type HideID ID
 
 func (t HideID) MarshalJSON() ([]byte, error) {
-	return nil, nil
+	return json.Marshal(nil)
 }
 
 func (t *HideID) UnmarshalJSON(b []byte) error {

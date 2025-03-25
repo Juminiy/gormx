@@ -309,3 +309,25 @@ func TestUpdateMapOptLockByTagFull(t *testing.T) {
 			}))
 	})
 }
+
+// ExtremeScenarioTestingCast
+func TestUpdateScopeHideID(t *testing.T) {
+	t.Run("Update Struct Dest NEQ Model", func(tt *testing.T) {
+
+	})
+	t.Run("Update Map Nil", func(tt *testing.T) {
+
+	})
+	t.Run("Update Map LenIsZero", func(tt *testing.T) {
+
+	})
+	t.Run("Update Map ElemHasNil", func(tt *testing.T) {
+
+	})
+	t.Run("Update Struct Nil", func(tt *testing.T) {
+
+	})
+	t.Run("Update Struct Zero", func(tt *testing.T) {
+
+	})
+}

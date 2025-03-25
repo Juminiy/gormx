@@ -3,6 +3,7 @@ package gormx_testv2
 import (
 	"errors"
 	"github.com/Juminiy/gormx"
+	"gorm.io/gorm"
 	"testing"
 )
 
@@ -47,4 +48,162 @@ func TestCreateListPreCheck(t *testing.T) {
 			tt.Log(err.Error())
 		}
 	})
+}
+
+// ExtremeScenarioTestingCast
+func TestCreateScopeHideID(t *testing.T) {
+	var iSMrcht func() *gorm.DB
+	t.Run("set merchant", func(tt *testing.T) {
+		mrcht := RandomMerchant()
+		Err(tt, iSqlite().Create(&mrcht))
+		iSMrcht = func() *gorm.DB {
+			return iSqlite().Set("merchant_id", mrcht.ID).
+				Set(gormx.OptionKey, gormx.Option{
+					DisableFieldDup:          false,
+					EnableComplexFieldDup:    true,
+					AfterCreateShowTenant:    true,
+					BeforeCreateMapCallHooks: true,
+					AfterCreateMapCallHooks:  true,
+				})
+		}
+	})
+	t.Run("Create Struct Nil", func(tt *testing.T) {
+		var hkr *BreadHacker
+		Err(tt, iSMrcht().Create(&hkr))
+		tt.Log(Enc(hkr))
+	})
+	t.Run("Create Struct Zero", func(tt *testing.T) {
+		var hkr BreadHacker
+		Err(tt, iSMrcht().Create(&hkr))
+		tt.Log(Enc(hkr))
+	})
+	t.Run("Create StructList Nil", func(tt *testing.T) {
+		var hkrs []BreadHacker
+		if err := iSMrcht().Create(&hkrs).Error; err != nil {
+			tt.Log(tt.Name(), err.Error())
+			return
+		}
+		tt.Log(Enc(hkrs))
+	})
+	t.Run("Create StructList LenIsZero", func(tt *testing.T) {
+		var hkrs = []BreadHacker{}
+		if err := iSMrcht().Create(&hkrs).Error; err != nil {
+			tt.Log(tt.Name(), err.Error())
+			return
+		}
+		tt.Log(Enc(hkrs))
+	})
+	t.Run("Create StructList", func(tt *testing.T) {
+		var hkrs = []BreadHacker{{}, {}, {}}
+		Err(tt, iSMrcht().Create(&hkrs))
+		tt.Log(Enc(hkrs))
+	})
+	t.Run("Create StructArray LenIsZero", func(tt *testing.T) {
+		var hkrs [0]BreadHacker
+		if err := iSMrcht().Create(&hkrs).Error; err != nil {
+			tt.Log(tt.Name(), err.Error())
+			return
+		}
+		tt.Log(Enc(hkrs))
+	})
+	t.Run("Create StructArray", func(tt *testing.T) {
+		var hkrs [3]BreadHacker
+		Err(tt, iSMrcht().Create(&hkrs))
+		tt.Log(Enc(hkrs))
+	})
+	t.Run("Create MapList Nil", func(tt *testing.T) {
+		var hkrMapList []map[string]any
+		if err := iSMrcht().Table(`tbl_bread_hacker`).
+			Create(&hkrMapList).Error; err != nil {
+			tt.Log(tt.Name(), err.Error())
+			return
+		}
+		tt.Log(Enc(hkrMapList))
+	})
+	t.Run("Create MapList LenIsZero", func(tt *testing.T) {
+		var hkrMapList = []map[string]any{}
+		if err := iSMrcht().Table(`tbl_bread_hacker`).
+			Create(&hkrMapList).Error; err != nil {
+			tt.Log(tt.Name(), err.Error())
+			return
+		}
+		tt.Log(Enc(hkrMapList))
+	})
+	t.Run("Create MapList", func(tt *testing.T) {
+		var hkrMapList = []map[string]any{{}, {}, {}}
+		if err := iSMrcht().Table(`tbl_bread_hacker`).
+			Create(&hkrMapList).Error; err != nil {
+			tt.Log(tt.Name(), err.Error())
+			return
+		}
+		tt.Log(Enc(hkrMapList))
+	})
+}
+
+func testCreateMapExtremeCases(t *testing.T, txFn func() *gorm.DB) {
+	t.Run("Create NilPtrToNilMap", func(tt *testing.T) {
+		var hkrMap *map[string]any
+		if err := txFn().Table(`tbl_bread_hacker`).
+			Create(hkrMap).Error; err != nil {
+			tt.Log(tt.Name(), err.Error())
+			return
+		}
+		tt.Log(Enc(hkrMap))
+	})
+	t.Run("Create PtrToNilMap", func(tt *testing.T) {
+		var hkrMap map[string]any
+		if err := txFn().Table(`tbl_bread_hacker`).
+			Create(&hkrMap).Error; err != nil {
+			tt.Log(tt.Name(), err.Error())
+			return
+		}
+		tt.Log(Enc(hkrMap))
+	})
+	t.Run("Create PtrToZeroMap", func(tt *testing.T) {
+		var hkrMap = map[string]any{}
+		if err := txFn().Table(`tbl_bread_hacker`).
+			Create(&hkrMap).Error; err != nil {
+			tt.Log(tt.Name(), err.Error())
+			return
+		}
+		tt.Log(Enc(hkrMap))
+	})
+	t.Run("Create ZeroMap", func(tt *testing.T) {
+		var hkrMap = map[string]any{}
+		if err := txFn().Table(`tbl_bread_hacker`).
+			Create(hkrMap).Error; err != nil {
+			tt.Log(tt.Name(), err.Error())
+			return
+		}
+		tt.Log(Enc(hkrMap))
+	})
+	t.Run("Create NilMap", func(tt *testing.T) {
+		var hkrMap map[string]any
+		if err := txFn().Table(`tbl_bread_hacker`).
+			Create(hkrMap).Error; err != nil {
+			tt.Log(tt.Name(), err.Error())
+			return
+		}
+		tt.Log(Enc(hkrMap))
+	})
+}
+
+func TestCreateMapExtremeCases(t *testing.T) {
+	var iSMrcht func() *gorm.DB
+	t.Run("set merchant", func(tt *testing.T) {
+		mrcht := RandomMerchant()
+		Err(tt, iSqlite().Create(&mrcht))
+		iSMrcht = func() *gorm.DB {
+			return iSqlite().Set("merchant_id", mrcht.ID).
+				Set(gormx.OptionKey, gormx.Option{
+					DisableFieldDup:          false,
+					EnableComplexFieldDup:    true,
+					AfterCreateShowTenant:    true,
+					BeforeCreateMapCallHooks: true,
+					AfterCreateMapCallHooks:  true,
+				})
+		}
+	})
+	//testCreateMapExtremeCases(t, iSqlite0)
+	testCreateMapExtremeCases(t, iSMrcht)
 }

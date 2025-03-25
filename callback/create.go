@@ -1,6 +1,7 @@
 package callback
 
 import (
+	"github.com/Juminiy/gormx/deps"
 	"github.com/Juminiy/kube/pkg/util"
 	"github.com/samber/lo"
 	"gorm.io/gorm"
@@ -112,9 +113,22 @@ func hasSchemaAndDestIsMap(tx *gorm.DB) (sch *schema.Schema, ok bool) {
 	if sch == nil {
 		return
 	}
-	switch tx.Statement.Dest.(type) {
-	case map[string]any, *map[string]any, *[]map[string]any:
+	switch destMap := tx.Statement.Dest.(type) {
+	case map[string]any:
+		if deps.IndI(tx.Statement.Dest).IsNil() {
+			// var mapValue map[string]any
+			return nil, false
+		}
+		// var mapValue = map[string]any{}
+		// mapValue := map[string]any
 		return sch, true
+	case *map[string]any:
+		if mapRv := deps.IndI(tx.Statement.Dest); mapRv.IsNil() {
+			mapRv.SetI(map[string]any{})
+		}
+		return sch, true
+	case *[]map[string]any:
+		return sch, destMap != nil && len(*destMap) > 0
 	default:
 		return nil, false
 	}

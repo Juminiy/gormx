@@ -9,6 +9,7 @@ import (
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/samber/lo"
 	"gorm.io/gorm"
+	"gorm.io/plugin/soft_delete"
 	"testing"
 	"time"
 )
@@ -230,4 +231,22 @@ func TestParseTypes(t *testing.T) {
 		}
 	}
 
+}
+
+type BreadHacker struct {
+	VID        tenants.HideID `x:"merchant"`
+	ID         uint
+	CreateTime int64 `gorm:"autoCreateTime:milli"`
+	UpdateTime int64 `gorm:"autoUpdateTime:milli"`
+	soft_delete.DeletedAt
+	SoftMin string `gorm:"default:$?"` // default in tag
+	SoftAvg string // default in hooks
+	SoftMax string
+}
+
+func (h *BreadHacker) BeforeCreate(tx *gorm.DB) error {
+	if len(h.SoftAvg) == 0 {
+		h.SoftAvg = "%^"
+	}
+	return nil
 }

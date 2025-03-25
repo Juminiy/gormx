@@ -110,3 +110,10 @@ Notice of best practice:
   - must not return receiver itself, will be stackoverflow
   - value must typeCast or typeConvert to driver.Value
   - return type should equal to ScanFromType
+
+> 2025.03.25
+1. ExtremeScenarioTestCase
+   1. Create ZeroStruct, NilPtrToStruct, ZeroLenStructList, ZeroLenStructArray
+   2. Create ZeroMap, NilPtrToMap, NilPtrToZeroMap, (For NilMap,NilPtrToNilMap: nothing can be done)
+   3. Update Map, need to write case
+   4. Fix tenants.HideID marshal Bug
