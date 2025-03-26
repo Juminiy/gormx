@@ -46,9 +46,4 @@ func LegalOrderByColumn(column clause.OrderByColumn) bool {
 
 func KnownOrderByColumn(column clause.OrderByColumn) bool {
 	return len(column.Column.Name) > 0
-	// TODO: fix unknown column, but the raw mode with case:
-	// 1. .Order(`id asc`) should not infer to a column,
-	// but a raw column(id) with order keyword(asc)
-	// which infer the space or tab length?
-	// the `id asc` is raw colum and is valid, use raw to determine
 }

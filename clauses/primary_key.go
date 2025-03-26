@@ -72,7 +72,8 @@ func stmtHasPrimaryKeyNotZero(stmt *gorm.Statement) bool {
 
 // referred from: callbacks.Delete, callbacks.Update
 func stmtPrimaryKeyClause(stmt *gorm.Statement) (clauseI clause.Expression, ok bool) {
-	if stmt.SQL.Len() == 0 && stmt.Schema != nil {
+	if stmt.SQL.Len() == 0 && stmt.Schema != nil &&
+		stmt.Schema.ModelType == stmt.ReflectValue.Type() {
 		_, queryValues := schema.GetIdentityFieldValuesMap(stmt.Context, stmt.ReflectValue, stmt.Schema.PrimaryFields)
 		column, values := schema.ToQueryValues(stmt.Table, stmt.Schema.PrimaryFieldDBNames, queryValues)
 		if len(values) > 0 {

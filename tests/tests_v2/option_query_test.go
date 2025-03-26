@@ -7,10 +7,8 @@ import (
 	"github.com/Juminiy/gormx/tenants"
 	"github.com/Juminiy/kube/pkg/util"
 	"github.com/brianvoe/gofakeit/v7"
-	"github.com/samber/lo"
 	"gorm.io/gorm"
 	"gorm.io/plugin/soft_delete"
-	"testing"
 	"time"
 )
 
@@ -108,129 +106,6 @@ func RandomMerchant() *BreadMerchant {
 		ConcatPerson: gofakeit.Person().LastName,
 		ConcatPhone:  gofakeit.Person().Contact.Phone,
 	}
-}
-
-func TestTypes(t *testing.T) {
-	var (
-		iSMrcht   func() *gorm.DB
-		mrcht     *BreadMerchant
-		breadList []*BreadProduct
-		saleList  []*BreadSale
-	)
-	t.Run("Create BreadList", func(tt *testing.T) {
-		breadList = []*BreadProduct{RandomBread(), RandomBread(), RandomBread()}
-		Err(tt, iSqlite().Create(&breadList))
-		tt.Log(Enc(map[string]any{"bread_id_list": lo.Map(breadList, func(brd *BreadProduct, _ int) uint {
-			return brd.ID
-		})}))
-	})
-	t.Run("Create Merchant", func(tt *testing.T) {
-		mrcht = RandomMerchant()
-		Err(tt, iSqlite().Create(&mrcht))
-		tt.Log(Enc(map[string]any{"merchant_id": mrcht.ID}))
-		iSMrcht = func() *gorm.DB {
-			return iSqlite().Set("merchant_id", mrcht.ID)
-		}
-	})
-	t.Run("Create SaleInfo", func(tt *testing.T) {
-		saleList = lo.Map(breadList, func(brd *BreadProduct, _ int) *BreadSale {
-			return RandomBreadSale(brd)
-		})
-		Err(tt, iSMrcht().Create(&saleList))
-		tt.Log(Enc(saleList))
-	})
-	t.Run("Update SaleInfo", func(tt *testing.T) {
-		err := iSMrcht().Transaction(func(tx *gorm.DB) error {
-			for _, sale := range saleList {
-				err := tx.Model(sale).Updates(map[string]any{
-					"first_sale_time": time.Now(),
-					"last_sale_time":  time.Now(),
-					"sale_count":      gofakeit.IntRange(100, 2000),
-				}).Error
-				if err != nil {
-					return err
-				}
-			}
-			return nil
-		})
-		if err != nil {
-			t.Error(err)
-		}
-	})
-	t.Run("Count SaleInfo", func(tt *testing.T) {
-		var cntSale int64
-		Err(tt, iSMrcht().Table(`tbl_bread_sale`).
-			Count(&cntSale))
-		t.Log(cntSale)
-	})
-	t.Run("Pluck SaleReleaseCount", func(tt *testing.T) {
-		var releaseCounts []int
-		Err(tt, iSMrcht().Table(`tbl_bread_sale`).
-			Pluck("release_count", &releaseCounts))
-	})
-	t.Run("Find saleSales", func(tt *testing.T) {
-		var saleSales []struct {
-			ID            uint
-			FirstSaleTime time.Time
-			LastSaleTime  time.Time
-			SaleCount     int64
-		}
-		Err(tt, iSMrcht().Table(`tbl_bread_sale`).
-			Find(&saleSales))
-	})
-}
-
-func TestParseTypes(t *testing.T) {
-	for _, tCase := range []string{
-		`{
-	"TimeLine": "2025-03-22T22:21:50+08:00",
-	"TimeOff": "2025-03-22T22:21:50+08:00",
-	"TimeIn": "2025-03-22T22:21:50+08:00",
-	"CostCent": "3.33",
-	"BinSize": "10Mi"
-}`, `{
-	"TimeLine": 1742653292,
-	"TimeOff": 1742653292,
-	"TimeIn": 1742653292,
-	"CostCent": "3.33",
-	"BinSize": "10Mi"
-}`, `{
-	"CostCent": "1",
-	"BinSize": "920"
-}`, `{
-	"CostCent": "2.2",
-	"BinSize": "4Ki"
-}`, `{
-	"CostCent": "2.03",
-	"BinSize": "8Mi"
-}`, `{
-	"CostCent": "3.00",
-	"BinSize": "10Gi"
-}`, `{
-	"CostCent": "5.30",
-	"BinSize": "22Ti"
-}`, `{
-	"CostCent": "89.03",
-	"BinSize": "22Ti"
-}`, `{
-	"CostCent": "2222.22",
-	"BinSize": "22Ti"
-}`,
-	} {
-		var cur struct {
-			TimeLine types.Time
-			TimeOff  types.Timestamp
-			TimeIn   types.DateTime
-			CostCent types.RMBCent
-			BinSize  types.BinarySize
-		}
-		if err := json.Unmarshal([]byte(tCase), &cur); err != nil {
-			t.Error(err)
-		} else {
-			t.Log(Enc(cur))
-		}
-	}
-
 }
 
 type BreadHacker struct {

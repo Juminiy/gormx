@@ -41,9 +41,9 @@ func iSUserTenant() *gorm.DB {
 // mysql
 /*func iInnoDB() *gorm.DB {
 	return imysql.Debug()
-}
+}*/
 
-func iInnoDB0() *gorm.DB {
+/*func iInnoDB0() *gorm.DB {
 	return imysql0.Debug()
 }*/
 
@@ -53,7 +53,7 @@ func iInnoDB0() *gorm.DB {
 }*/
 
 func init() {
-	slices.Values([]*gorm.DB{isqlite /*imysql*/ /* ipg*/})(func(db *gorm.DB) bool {
+	slices.Values([]*gorm.DB{isqlite /*, imysql*/ /*, ipg*/})(func(db *gorm.DB) bool {
 		util.Must(db.Use(&gormx.Config{
 			PluginName:  "gormx",
 			TagKey:      "x",
@@ -74,7 +74,7 @@ func TXAutoMigrate(iDb *gorm.DB) *gorm.DB {
 }
 
 func TestAAAInit(t *testing.T) {
-	slices.Values([]*gorm.DB{iSqlite() /*iInnoDB(), iPG()*/})(func(db *gorm.DB) bool {
+	slices.Values([]*gorm.DB{iSqlite() /*, iInnoDB()*/ /*, iPG()*/})(func(db *gorm.DB) bool {
 		util.Must(TXAutoMigrate(db).AutoMigrate(_ModelList...))
 		return true
 	})

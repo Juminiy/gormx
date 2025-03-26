@@ -141,24 +141,7 @@ func TestCreateScopeHideID(t *testing.T) {
 }
 
 func testCreateMapExtremeCases(t *testing.T, txFn func() *gorm.DB) {
-	t.Run("Create NilPtrToNilMap", func(tt *testing.T) {
-		var hkrMap *map[string]any
-		if err := txFn().Table(`tbl_bread_hacker`).
-			Create(hkrMap).Error; err != nil {
-			tt.Log(tt.Name(), err.Error())
-			return
-		}
-		tt.Log(Enc(hkrMap))
-	})
-	t.Run("Create PtrToNilMap", func(tt *testing.T) {
-		var hkrMap map[string]any
-		if err := txFn().Table(`tbl_bread_hacker`).
-			Create(&hkrMap).Error; err != nil {
-			tt.Log(tt.Name(), err.Error())
-			return
-		}
-		tt.Log(Enc(hkrMap))
-	})
+	// plugin create ok
 	t.Run("Create PtrToZeroMap", func(tt *testing.T) {
 		var hkrMap = map[string]any{}
 		if err := txFn().Table(`tbl_bread_hacker`).
@@ -168,6 +151,7 @@ func testCreateMapExtremeCases(t *testing.T, txFn func() *gorm.DB) {
 		}
 		tt.Log(Enc(hkrMap))
 	})
+	// plugin create ok
 	t.Run("Create ZeroMap", func(tt *testing.T) {
 		var hkrMap = map[string]any{}
 		if err := txFn().Table(`tbl_bread_hacker`).
@@ -177,7 +161,28 @@ func testCreateMapExtremeCases(t *testing.T, txFn func() *gorm.DB) {
 		}
 		tt.Log(Enc(hkrMap))
 	})
-	t.Run("Create NilMap", func(tt *testing.T) {
+	// gorm not ok, plugin create ok
+	t.Run("Create PtrToNilMap", func(tt *testing.T) {
+		var hkrMap map[string]any
+		if err := txFn().Table(`tbl_bread_hacker`).
+			Create(&hkrMap).Error; err != nil {
+			tt.Log(tt.Name(), err.Error())
+			return
+		}
+		tt.Log(Enc(hkrMap))
+	})
+	// gorm not support; throw error, so plugin BeforeCreate is not executed
+	/*t.Run("Create NilPtrToNilMap", func(tt *testing.T) {
+		var hkrMap *map[string]any
+		if err := txFn().Table(`tbl_bread_hacker`).
+			Create(hkrMap).Error; err != nil {
+			tt.Log(tt.Name(), err.Error())
+			return
+		}
+		tt.Log(Enc(hkrMap))
+	})*/
+	// gorm not support; plugin not support as well; go syntax not support
+	/*t.Run("Create NilMap", func(tt *testing.T) {
 		var hkrMap map[string]any
 		if err := txFn().Table(`tbl_bread_hacker`).
 			Create(hkrMap).Error; err != nil {
@@ -185,7 +190,7 @@ func testCreateMapExtremeCases(t *testing.T, txFn func() *gorm.DB) {
 			return
 		}
 		tt.Log(Enc(hkrMap))
-	})
+	})*/
 }
 
 func TestCreateMapExtremeCases(t *testing.T) {

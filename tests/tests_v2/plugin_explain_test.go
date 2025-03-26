@@ -19,3 +19,23 @@ func TestExplainQuery(t *testing.T) {
 		Set(gormx.OptionKey, gormx.Option{ExplainQueryOrRow: true}).
 		First(&breadSale, 1))
 }
+
+func TestExplainQueryPg(t *testing.T) {
+	/*var breadProduct BreadProduct
+	var breadSale BreadSale
+	Err(t, iPG().Create(&breadProduct))
+	Err(t, iPG().Create(RandomBreadSale(&breadProduct)))
+	Err(t, iPG().
+		Set(gormx.OptionKey, gormx.Option{ExplainQueryOrRow: true}).
+		First(&breadSale, 1))*/
+}
+
+func TestExplainQueryInnoDB(t *testing.T) {
+	/*var breadProduct BreadProduct
+	var breadSale BreadSale
+	Err(t, iInnoDB().Create(&breadProduct))
+	Err(t, iInnoDB().Create(RandomBreadSale(&breadProduct)))
+	Err(t, iInnoDB().
+		Set(gormx.OptionKey, gormx.Option{ExplainQueryOrRow: true}).
+		First(&breadSale, 1))*/
+}

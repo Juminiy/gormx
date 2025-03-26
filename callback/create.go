@@ -129,6 +129,8 @@ func hasSchemaAndDestIsMap(tx *gorm.DB) (sch *schema.Schema, ok bool) {
 		return sch, true
 	case *[]map[string]any:
 		return sch, destMap != nil && len(*destMap) > 0
+	case []map[string]any:
+		return sch, len(destMap) > 0
 	default:
 		return nil, false
 	}

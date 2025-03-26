@@ -313,21 +313,61 @@ func TestUpdateMapOptLockByTagFull(t *testing.T) {
 // ExtremeScenarioTestingCast
 func TestUpdateScopeHideID(t *testing.T) {
 	t.Run("Update Struct Dest NEQ Model", func(tt *testing.T) {
-
+		var hkr BreadHacker
+		Err(tt, iSqlite().Create(&hkr))
+		Err(tt, iSqlite().Model(hkr).Updates(struct {
+			SoftMax string
+		}{SoftMax: "*#"}))
+		Err(tt, iSqlite0().Model(hkr).Updates(struct {
+			SoftMax string
+		}{SoftMax: "*#"}))
+		// gorm not support
+		/*Err(tt, iSqlite().Table(`tbl_bread_hacker`).
+			Where(hkr.ID).
+			Updates(struct {
+				SoftMax string
+			}{SoftMax: "*#"}))
+		Err(tt, iSqlite0().Table(`tbl_bread_hacker`).
+			Where(hkr.ID).
+			Updates(struct {
+				SoftMax string
+			}{SoftMax: "*#"}))*/
 	})
 	t.Run("Update Map Nil", func(tt *testing.T) {
-
+		var hkr BreadHacker
+		Err(tt, iSqlite().Create(&hkr))
+		var hkrMap map[string]any
+		Err(tt, iSqlite().Model(hkr).Updates(hkrMap))
+		Err(tt, iSqlite0().Model(hkr).Updates(hkrMap))
 	})
 	t.Run("Update Map LenIsZero", func(tt *testing.T) {
-
+		var hkr BreadHacker
+		Err(tt, iSqlite().Create(&hkr))
+		Err(tt, iSqlite().Model(&hkr).Updates(map[string]any{}))
+		Err(tt, iSqlite0().Model(&hkr).Updates(map[string]any{}))
 	})
 	t.Run("Update Map ElemHasNil", func(tt *testing.T) {
-
+		var hkr BreadHacker
+		Err(tt, iSqlite().Create(&hkr))
+		var hkrMap = map[string]any{
+			"soft_max": "&?",
+			"soft_avg": nil,
+		}
+		Err(tt, iSqlite().Model(hkr).Updates(hkrMap))
+		Err(tt, iSqlite0().Model(hkr).Updates(hkrMap))
 	})
 	t.Run("Update Struct Nil", func(tt *testing.T) {
-
+		var hkr BreadHacker
+		Err(tt, iSqlite().Create(&hkr))
+		var hkr2 BreadHacker
+		Err(tt, iSqlite().Model(hkr).Updates(&hkr2))
+		Err(tt, iSqlite0().Model(hkr).Updates(&hkr2))
 	})
 	t.Run("Update Struct Zero", func(tt *testing.T) {
-
+		var hkr BreadHacker
+		Err(tt, iSqlite().Create(&hkr))
+		var hkr2 BreadHacker
+		Err(tt, iSqlite().Model(hkr).Updates(hkr2))
+		Err(tt, iSqlite0().Model(hkr).Updates(hkr2))
 	})
 }
