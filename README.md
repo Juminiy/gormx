@@ -117,3 +117,6 @@ Notice of best practice:
    2. Create ZeroMap, NilPtrToMap, NilPtrToZeroMap, (For NilMap,NilPtrToNilMap: nothing can be done)
    3. Update Map, need to write case
    4. Fix tenants.HideID marshal Bug
+
+> 2025.03.27
+1. Serializer
