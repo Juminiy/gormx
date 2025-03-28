@@ -115,8 +115,8 @@ Notice of best practice:
 1. ExtremeScenarioTestCase
    1. Create ZeroStruct, NilPtrToStruct, ZeroLenStructList, ZeroLenStructArray
    2. Create ZeroMap, NilPtrToMap, NilPtrToZeroMap, (For NilMap,NilPtrToNilMap: nothing can be done)
-   3. Update Map, need to write case
-   4. Fix tenants.HideID marshal Bug
+   3. Update Map, need to write case, test ok.
+   4. Fix tenants.HideID marshal Bug, test ok.
 
 > 2025.03.27
 1. Serializer
