@@ -3,12 +3,14 @@ package gormx_testv2
 import (
 	"database/sql/driver"
 	"encoding/json"
+	"github.com/Juminiy/gormx"
 	"github.com/Juminiy/gormx/schemas/types"
 	"github.com/Juminiy/gormx/tenants"
 	"github.com/Juminiy/kube/pkg/util"
 	"github.com/brianvoe/gofakeit/v7"
 	"gorm.io/gorm"
 	"gorm.io/plugin/soft_delete"
+	"testing"
 	"time"
 )
 
@@ -124,4 +126,26 @@ func (h *BreadHacker) BeforeCreate(tx *gorm.DB) error {
 		h.SoftAvg = "%^"
 	}
 	return nil
+}
+
+func TestPluckJSON(t *testing.T) {
+	// stdlib not support???
+	// sql: Scan called without calling Next
+	pluckJSON := func(tt *testing.T, txF func() *gorm.DB) {
+		var bread = RandomBread()
+		Err(tt, txF().Create(&bread))
+		var ingdt = map[string]int{}
+		if err := txF().Model(&BreadProduct{Model: gorm.Model{ID: bread.ID}}).
+			Pluck("ingredient", &ingdt).Error; err != nil {
+			t.Logf("stdlib not support type: %s", err.Error())
+		}
+		t.Log(ingdt)
+		var newBread = BreadProduct{Model: gorm.Model{ID: bread.ID}}
+		Err(tt, txF().Select("ingredient").First(&newBread))
+		t.Log(newBread.Ingredient)
+	}
+	pluckJSON(t, iSqlite0)
+	pluckJSON(t, func() *gorm.DB {
+		return iSqlite().Set(gormx.OptionKey, gormx.Option{PluckQueryByPkClause: true})
+	})
 }

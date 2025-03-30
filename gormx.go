@@ -117,6 +117,7 @@ type Option struct {
 	AfterQueryShowTenant bool // effect on query
 	QueryDynamicSQL      bool // effect on query
 	ExplainQueryOrRow    bool // effect on query or row
+	PluckQueryByPkClause bool // effect on query one column
 	// Deprecated
 	AfterFindMapCallHooks bool // effect on query map, after the evaluation, it's not a common and general case, but also to waste of time
 

@@ -2,6 +2,7 @@ package gormx
 
 import (
 	"github.com/Juminiy/gormx/callback"
+	"github.com/Juminiy/gormx/clauses"
 	"github.com/Juminiy/gormx/deps"
 	"github.com/Juminiy/gormx/dynamicsql"
 	"github.com/Juminiy/gormx/explain"
@@ -21,6 +22,15 @@ func (cfg *Config) BeforeQuery(tx *gorm.DB) {
 
 	if sCfg.QueryDynamicSQL {
 		dynamicsql.OmitEmptyClause(tx)
+	}
+
+	if sCfg.PluckQueryByPkClause {
+		clauseSlct, ok := clauses.SelectClause(tx)
+		if ok && len(clauseSlct.Columns) == 1 {
+			if clausePk, ok := clauses.StmtPrimaryKeyClause(tx.Statement); ok {
+				tx.Statement.AddClause(clauses.ClauseExpr(clausePk))
+			}
+		}
 	}
 
 	cfg.AddTenantClauses(tx, true)

@@ -173,3 +173,7 @@ func ClauseColumnEq(column string, value any) clause.Interface {
 		},
 	}}
 }
+
+func ClauseExpr(expr clause.Expression, exprList ...clause.Expression) clause.Interface {
+	return clause.Where{Exprs: append(exprList, expr)}
+}
