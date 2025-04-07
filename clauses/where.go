@@ -8,7 +8,7 @@ import (
 )
 
 func ModifyWhereClause(tx *gorm.DB, exprOk func(clause.Expression) bool) (where clause.Where, ok bool) {
-	where, ok = WhereClause(tx)
+	where, ok = WhereClause(tx.Statement)
 	if !ok {
 		return
 	}
@@ -29,8 +29,8 @@ func ModifyWhereClause(tx *gorm.DB, exprOk func(clause.Expression) bool) (where 
 
 // WhereClause
 // Expr or ExprList
-func WhereClause(tx *gorm.DB) (whereClause clause.Where, ok bool) {
-	where, wok := util.MapElemOk(tx.Statement.Clauses, Where)
+func WhereClause(stmt *gorm.Statement) (whereClause clause.Where, ok bool) {
+	where, wok := util.MapElemOk(stmt.Clauses, Where)
 	if !wok {
 		return
 	}
@@ -41,6 +41,6 @@ func WhereClause(tx *gorm.DB) (whereClause clause.Where, ok bool) {
 }
 
 func NoWhereClause(tx *gorm.DB) bool {
-	_, ok := WhereClause(tx)
+	_, ok := WhereClause(tx.Statement)
 	return !ok && !StmtHasPrimaryKeyNotZero(tx.Statement)
 }

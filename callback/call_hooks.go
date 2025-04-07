@@ -163,7 +163,7 @@ func returningQuery(tx *gorm.DB, dest any) {
 		})
 	}
 
-	if txClause, ok := clauses.WhereClause(tx); ok {
+	if txClause, ok := clauses.WhereClause(tx.Statement); ok {
 		ntx.Statement.AddClause(txClause)
 	}
 

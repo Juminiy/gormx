@@ -8,7 +8,7 @@ import (
 )
 
 func ModifyOrderByClause(tx *gorm.DB, columnOk func(clause.OrderByColumn) bool) (orderBy clause.OrderBy, ok bool) {
-	orderBy, ok = OrderByClause(tx)
+	orderBy, ok = OrderByClause(tx.Statement)
 	if !ok {
 		return
 	}
@@ -29,8 +29,8 @@ func ModifyOrderByClause(tx *gorm.DB, columnOk func(clause.OrderByColumn) bool) 
 
 // OrderByClause
 // ORDER BY column or ORDER BY columnList
-func OrderByClause(tx *gorm.DB) (orderByClause clause.OrderBy, ok bool) {
-	orderBy, ook := util.MapElemOk(tx.Statement.Clauses, OrderBy)
+func OrderByClause(stmt *gorm.Statement) (orderByClause clause.OrderBy, ok bool) {
+	orderBy, ook := util.MapElemOk(stmt.Clauses, OrderBy)
 	if !ook {
 		return
 	}

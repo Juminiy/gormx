@@ -21,16 +21,16 @@ func BeforeQueryOmit(tx *gorm.DB) {
 
 // Deprecated
 func AfterFindMapCallHook(db *gorm.DB) {
-	if sch, ok := hasSchemaAndDestIsMap(db); ok &&
-		!db.Statement.SkipHooks && sch.AfterFind {
-		/*setUpDestMapStmtModel(db, sch)*/
-		/*CallHooks(db, func(v any, tx *gorm.DB) bool {
-			if afterFindI, ok := v.(callbacks.AfterFindInterface); ok {
-				_ = db.AddError(afterFindI.AfterFind(tx))
-				return true
-			}
-			return false
-		})*/
-		/*scanModelToDestMap(db)*/
-	}
+	//if sch, ok := hasSchemaAndDestIsMap(db); ok &&
+	//	!db.Statement.SkipHooks && sch.AfterFind {
+	//	/*setUpDestMapStmtModel(db, sch)*/
+	//	/*CallHooks(db, func(v any, tx *gorm.DB) bool {
+	//		if afterFindI, ok := v.(callbacks.AfterFindInterface); ok {
+	//			_ = db.AddError(afterFindI.AfterFind(tx))
+	//			return true
+	//		}
+	//		return false
+	//	})*/
+	//	/*scanModelToDestMap(db)*/
+	//}
 }

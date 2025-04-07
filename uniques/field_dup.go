@@ -215,7 +215,7 @@ func (d *FieldDup) doCount(tx *gorm.DB, exprI clause.Expression, forUpdate bool)
 			exprs = append(exprs, expr)
 		}
 		// explicit where clause
-		if txClause, ok := clauses.WhereClause(tx); ok {
+		if txClause, ok := clauses.WhereClause(tx.Statement); ok {
 			exprs = append(exprs, txClause)
 		}
 		if len(exprs) > 0 {

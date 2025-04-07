@@ -21,7 +21,7 @@ func WriteToRowOrRaw(tx *gorm.DB) {
 		orderBy.Build(tx.Statement)
 	}
 
-	if limit, ok := clauses.LimitClause(tx); ok {
+	if limit, ok := clauses.LimitClause(tx.Statement); ok {
 		_ = tx.Statement.WriteByte(' ')
 		limit.Build(tx.Statement)
 	}
