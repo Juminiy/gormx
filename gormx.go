@@ -122,6 +122,8 @@ type Option struct {
 	AfterFindMapCallHooks bool // effect on query map, after the evaluation, it's not a common and general case, but also to waste of time
 
 	WriteClauseToRowOrRaw bool // effect on row or raw
+
+	Optimize *OptimizeOption
 }
 
 const OptionKey = "session:option_config"
@@ -136,4 +138,8 @@ func (cfg *Config) OptionConfig(tx *gorm.DB) Option {
 		}
 	}
 	return *cfg.Option
+}
+
+type OptimizeOption struct {
+	QueryOffsetDelayJoin *int64
 }

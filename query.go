@@ -3,6 +3,7 @@ package gormx
 import (
 	"github.com/Juminiy/gormx/callback"
 	"github.com/Juminiy/gormx/clauses"
+	"github.com/Juminiy/gormx/coverindex"
 	"github.com/Juminiy/gormx/deps"
 	"github.com/Juminiy/gormx/dynamicsql"
 	"github.com/Juminiy/gormx/explain"
@@ -34,6 +35,12 @@ func (cfg *Config) BeforeQuery(tx *gorm.DB) {
 	}
 
 	cfg.AddTenantClauses(tx, true)
+
+	if cfgOptimize := sCfg.Optimize; cfgOptimize != nil {
+		if offset := cfgOptimize.QueryOffsetDelayJoin; offset != nil {
+			coverindex.DelayJoin{OffsetUpperBound: *offset}.ModifyStatement(tx.Statement)
+		}
+	}
 }
 
 func (cfg *Config) AfterQuery(tx *gorm.DB) {
