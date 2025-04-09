@@ -1,5 +1,6 @@
 package coverindex
 
-// when Query List ON gorm.CreateInBatches
-// Statement uses order by created_at desc
-// as well add order by pk desc, for same create_time wrong order case
+// ONLY a NOTATION
+// after create batch records (by Create(&StructList)), they have same `created_at` time
+// when queryList Statement uses order by `created_at`, driver will return unOrdered list
+// solution is to add order by <pk_cols> same order with `created_at`
