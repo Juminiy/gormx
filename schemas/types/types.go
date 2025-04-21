@@ -14,11 +14,11 @@ func ValueFromJSONError(typeDesc string) error {
 	return fmt.Errorf("type: %s, value decode is illegal from json", typeDesc)
 }
 
-// InValidJSONValue
-// - invalid-value will not throw error, ignore value only
-// - illegal-value will throw error
-func InValidJSONValue(s string) bool {
-	return util.ElemIn(s,
+// InValidJSON
+// - invalid-json will not throw error, ignore value only
+// - illegal-json will throw error
+func InValidJSON(b []byte) bool {
+	return util.ElemIn(util.Bytes2StringNoCopy(b),
 		`null`, `0`, `0.0`, `""`,
 	)
 }

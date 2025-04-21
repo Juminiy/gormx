@@ -112,11 +112,19 @@ func TestParseTypes(t *testing.T) {
 	"BinSize": "22Ti"
 }`, `{
 	"CostCent": "89.03",
-	"BinSize": "22Ti"
+	"BinSize": "22Pi"
 }`, `{
-	"CostCent": "2222.22",
-	"BinSize": "22Ti"
-}`,
+	"Example": {
+		"IntTyp": 114514,
+		"RMap": {
+			"Key":"Value",
+			"V8": null
+		}
+	}
+}`, `{
+	"Example": null
+}
+`,
 	} {
 		var cur struct {
 			TimeLine types.Time
@@ -124,6 +132,7 @@ func TestParseTypes(t *testing.T) {
 			TimeIn   types.DateTime
 			CostCent types.RMBCent
 			BinSize  types.BinarySize
+			Example  types.ExampleTyp
 		}
 		if err := json.Unmarshal([]byte(tCase), &cur); err != nil {
 			t.Error(err)

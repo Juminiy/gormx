@@ -4,7 +4,6 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
-	"github.com/Juminiy/kube/pkg/util"
 	"strconv"
 	"strings"
 )
@@ -34,7 +33,7 @@ func (c RMBCent) MarshalJSON() ([]byte, error) {
 }
 
 func (c *RMBCent) UnmarshalJSON(b []byte) error {
-	if InValidJSONValue(util.Bytes2StringNoCopy(b)) {
+	if InValidJSON(b) {
 		return nil
 	}
 

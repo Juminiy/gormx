@@ -1,7 +1,7 @@
 package types
 
 import (
-	"github.com/Juminiy/kube/pkg/util"
+	"encoding/json"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
@@ -14,24 +14,34 @@ var ErrBinarySizeFromDB = ValueFromDBError("BinarySize")
 var ErrBinarySizeFromJSON = ValueFromJSONError("BinarySize")
 
 func (s BinarySize) MarshalJSON() ([]byte, error) {
-	binSi := resource.Quantity{Format: resource.BinarySI}
-	binSi.Set(int64(s))
-	return binSi.MarshalJSON()
+	if s >= 0 {
+		binSi := resource.NewQuantity(int64(s), resource.BinarySI)
+		binSi.Set(int64(s))
+		return binSi.MarshalJSON()
+	}
+	return json.Marshal(nil)
 }
 
 func (s *BinarySize) UnmarshalJSON(b []byte) error {
-	if InValidJSONValue(util.Bytes2StringNoCopy(b)) {
+	if InValidJSON(b) {
 		return nil
 	}
 
-	binSi := resource.Quantity{Format: resource.BinarySI}
-	if err := binSi.UnmarshalJSON(b); err != nil {
-		return err
-	} else if binI64, ok := binSi.AsInt64(); ok {
+	var bStr string
+	if err := json.Unmarshal(b, &bStr); err == nil {
+		if qtt, err := resource.ParseQuantity(bStr); err == nil {
+			*s = BinarySize(qtt.Value())
+			return nil
+		}
+	}
+
+	/*qtt := resource.NewQuantity(0, resource.BinarySI)
+	if err := qtt.UnmarshalJSON(b); err == nil {
+		*s = BinarySize(qtt.Value())
+		return nil
+	} else if binI64, ok := qtt.AsInt64(); ok {
 		*s = BinarySize(binI64)
 		return nil
-	}
-	// TODO: replace Ki -> KB, Mi -> MB, Gi -> GB, add none_unit 'B'
-	// TODO: cannot hold bigger eq than 1Ti size
+	}*/
 	return ErrBinarySizeFromJSON
 }

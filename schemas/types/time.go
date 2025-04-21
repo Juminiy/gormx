@@ -33,7 +33,7 @@ func (t Time) MarshalJSON() ([]byte, error) {
 }
 
 func (t *Time) UnmarshalJSON(b []byte) error {
-	if bStr := util.Bytes2StringNoCopy(b); InValidJSONValue(bStr) {
+	if bStr := util.Bytes2StringNoCopy(b); InValidJSON(b) {
 		t.Valid = false
 		return nil
 	} else if err := t.Time.UnmarshalJSON(b); err == nil {
@@ -103,7 +103,7 @@ func (t Timestamp) MarshalJSON() ([]byte, error) {
 }
 
 func (t *Timestamp) UnmarshalJSON(b []byte) error {
-	if bStr := util.Bytes2StringNoCopy(b); InValidJSONValue(bStr) {
+	if InValidJSON(b) {
 		t.Valid = false
 		return nil
 	}
