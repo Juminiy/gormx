@@ -34,7 +34,7 @@ func (s *BinarySize) UnmarshalJSON(b []byte) error {
 			return nil
 		}
 	}
-
+	// same as upper
 	/*qtt := resource.NewQuantity(0, resource.BinarySI)
 	if err := qtt.UnmarshalJSON(b); err == nil {
 		*s = BinarySize(qtt.Value())

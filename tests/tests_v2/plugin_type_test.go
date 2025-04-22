@@ -122,7 +122,8 @@ func TestParseTypes(t *testing.T) {
 		}
 	}
 }`, `{
-	"Example": null
+	"Example": null,
+	"BinSize": "8Ei"
 }
 `,
 	} {
