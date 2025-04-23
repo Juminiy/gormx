@@ -8,13 +8,13 @@ import (
 	"strings"
 )
 
-type RMBCent int64
-
 var ErrParseRMBCent = errors.New("invalid string parse to rmb cent")
 
 var ErrRMBCentValueFromDB = ValueFromDBError("RMBCent")
 
 var ErrRMBCentValueFromJSON = ValueFromJSONError("RMBCent")
+
+type RMBCent int64
 
 func (c *RMBCent) Scan(src any) error {
 	if cent, ok := src.(int64); ok {

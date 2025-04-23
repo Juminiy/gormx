@@ -168,3 +168,27 @@ func TestTenantsTypes(t *testing.T) {
 		}
 	}
 }
+
+func TestBinarySizeTypes(t *testing.T) {
+	for _, tCase := range []string{
+		`{"Fa":7,"Fb":"7B","Fc":"7B","Fd":"7"}`,                     // B
+		`{"Fa":7168,"Fb":"7KB","Fc":"7KiB","Fd":"7Ki"}`,             // KB
+		`{"Fa":7340032,"Fb":"7MB","Fc":"7MiB","Fd":"7Mi"}`,          // MB
+		`{"Fa":7516192768,"Fb":"7GB","Fc":"7GiB","Fd":"7Gi"}`,       // GB
+		`{"Fa":7696581394432,"Fb":"7TB","Fc":"7TiB","Fd":"7Ti"}`,    // TB
+		`{"Fa":7881299347898368,"Fb":"7PB","Fc":"7PiB","Fd":"7Pi"}`, // PB
+		//`{"Fa":1152921504606846976,"Fb":"1EB","Fc":"1EiB","Fd":"1Ei"}`, // EB
+	} {
+		var cur struct {
+			Fa types.BinarySize
+			Fb types.HBinarySize
+			Fc types.NBinarySize
+			Fd types.KBinarySize
+		}
+		if err := json.Unmarshal([]byte(tCase), &cur); err != nil {
+			t.Error(err)
+		} else {
+			t.Log(Enc(cur))
+		}
+	}
+}
