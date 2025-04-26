@@ -19,7 +19,8 @@ func ValueFromJSONError(typeDesc string) error {
 // - illegal-json will throw error
 func InValidJSON(b []byte) bool {
 	return util.ElemIn(util.Bytes2StringNoCopy(b),
-		`null`, `0`, `0.0`, `""`,
+		`null`, `0`, `0.0`, `""`, // only receive null, literal value(not false)
+		// notToReceive {}, [], false
 	)
 }
 

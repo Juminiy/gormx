@@ -18,7 +18,7 @@ type ExampleTyp struct {
 	NullTimeType sql.NullTime
 	TimePtrTyp   *time.Time
 	Balance      RMBCent
-	BinSz        BinarySize
+	BinSz        KBinarySize
 	RMap         map[string]string
 }
 

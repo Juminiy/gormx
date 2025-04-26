@@ -132,7 +132,7 @@ func TestParseTypes(t *testing.T) {
 			TimeOff  types.Timestamp
 			TimeIn   types.DateTime
 			CostCent types.RMBCent
-			BinSize  types.BinarySize
+			BinSize  types.KBinarySize
 			Example  types.ExampleTyp
 		}
 		if err := json.Unmarshal([]byte(tCase), &cur); err != nil {

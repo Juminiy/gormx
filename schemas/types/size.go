@@ -11,11 +11,11 @@ var ErrBinarySizeFromDB = ValueFromDBError("BinarySize")
 
 var ErrBinarySizeFromJSON = ValueFromJSONError("BinarySize")
 
-var ErrNBinarySizeFromJSON = ValueFromJSONError("NBinarySize")
+var ErrNBinarySizeFromJSON = ValueFromJSONError("NBinarySize(NormalizedBinarySize)")
 
-var ErrHBinarySizeFromJSON = ValueFromJSONError("HBinarySize")
+var ErrHBinarySizeFromJSON = ValueFromJSONError("HBinarySize(HumanReadBinarySize)")
 
-var ErrKBinarySizeFromJSON = ValueFromJSONError("KBinarySize")
+var ErrKBinarySizeFromJSON = ValueFromJSONError("KBinarySize(KubernetesBinarySize)")
 
 // BinarySize
 //  1. range: can hold [0,1<<63)B

@@ -32,6 +32,9 @@ func (t Time) MarshalJSON() ([]byte, error) {
 	return json.Marshal(nil)
 }
 
+// UnmarshalJSON
+// - "2006-01-02T15:04:05.000Z" | time.Time
+// - 1136214246 		   		| int64
 func (t *Time) UnmarshalJSON(b []byte) error {
 	if bStr := util.Bytes2StringNoCopy(b); InValidJSON(b) {
 		t.Valid = false
@@ -45,15 +48,7 @@ func (t *Time) UnmarshalJSON(b []byte) error {
 			t.Valid = true
 			return nil
 		}
-	} /*else if parsedTime, err := now.Parse(bStr); err == nil {
-		t.Valid = true
-		t.Time = parsedTime
-	} else {
-		nullTime := sql.NullTime{}
-		if err := json.Unmarshal(b, &nullTime); err == nil {
-			*t = Time(nullTime)
-		}
-	}*/
+	}
 
 	t.Valid = false
 	return ErrTimeFromJSON
@@ -76,6 +71,9 @@ func (t DateTime) MarshalJSON() ([]byte, error) {
 	return (Time)(t).MarshalJSON()
 }
 
+// UnmarshalJSON
+// - "2006-01-02T15:04:05.000Z" | time.Time
+// - 1136214246 		   		| int64
 func (t *DateTime) UnmarshalJSON(b []byte) error {
 	return (*Time)(t).UnmarshalJSON(b)
 }
@@ -102,6 +100,9 @@ func (t Timestamp) MarshalJSON() ([]byte, error) {
 	return Time{Time: time.Unix(t.Int64, 0), Valid: t.Valid}.MarshalJSON()
 }
 
+// UnmarshalJSON
+// - "2006-01-02T15:04:05.000Z" | time.Time
+// - 1136214246 		   		| int64
 func (t *Timestamp) UnmarshalJSON(b []byte) error {
 	if InValidJSON(b) {
 		t.Valid = false
@@ -120,5 +121,64 @@ func (t *Timestamp) UnmarshalJSON(b []byte) error {
 	}
 
 	t.Valid = false
+	return ErrTimeFromJSON
+}
+
+type AnyTime sql.NullInt64
+
+func (t *AnyTime) Scan(src any) error {
+	return (*Timestamp)(t).Scan(src)
+}
+
+func (t AnyTime) Value() (driver.Value, error) {
+	return (Timestamp)(t).Value()
+}
+
+func (t AnyTime) MarshalJSON() ([]byte, error) {
+	return (Timestamp)(t).MarshalJSON()
+}
+
+// UnmarshalJSON
+// receive format:
+//
+//	JSONValueFormat								 	  | GoType
+//
+// - "2006-01-02T15:04:05.000Z"  				 	  | time.Time
+// - 1136214246									 	  | int64
+// - "1136214246"								 	  | string(int64Value)
+// - {"Time":"2006-01-02T15:04:05.000Z","Valid":true} | sql.NullTime
+// - {"Int64":1136214246,"Valid":true}			 	  | sql.NullInt64
+func (t *AnyTime) UnmarshalJSON(b []byte) error {
+	if InValidJSON(b) {
+		t.Valid = false
+		return nil
+	}
+
+	if (*Timestamp)(t).UnmarshalJSON(b) == nil {
+		return nil
+	}
+
+	var i64Str string
+	if json.Unmarshal(b, &i64Str) == nil {
+		if i64v, err := parseI64(i64Str); err == nil && i64v > 0 {
+			t.Int64 = i64v
+			t.Valid = true
+			return nil
+		}
+	}
+
+	var nullTimeVal sql.NullTime
+	if json.Unmarshal(b, &nullTimeVal) == nil && !nullTimeVal.Time.IsZero() {
+		t.Int64 = nullTimeVal.Time.Unix()
+		t.Valid = nullTimeVal.Valid
+		return nil
+	}
+
+	var nullI64Val sql.NullInt64
+	if json.Unmarshal(b, &nullI64Val) == nil && nullI64Val.Int64 > 0 {
+		*t = AnyTime(nullI64Val)
+		return nil
+	}
+
 	return ErrTimeFromJSON
 }
