@@ -14,6 +14,9 @@ var ErrRMBCentValueFromDB = ValueFromDBError("RMBCent")
 
 var ErrRMBCentValueFromJSON = ValueFromJSONError("RMBCent")
 
+// RMBCent
+// ChinaMainland RMB balance minium normalized unit: cent
+// - positive only, value must >= 0
 type RMBCent int64
 
 func (c *RMBCent) Scan(src any) error {
@@ -93,5 +96,24 @@ func (c *RMBCent) Parse(centStr string) error {
 	}
 
 	*c = RMBCent(cent)
+	return nil
+}
+
+// RMBCentRO, fullName: RMBCent-ReadOnly
+type RMBCentRO RMBCent
+
+func (c *RMBCentRO) Scan(src any) error {
+	return (*RMBCent)(c).Scan(src)
+}
+
+func (c RMBCentRO) Value() (driver.Value, error) {
+	return (RMBCent)(c).Value()
+}
+
+func (c RMBCentRO) MarshalJSON() ([]byte, error) {
+	return (RMBCent)(c).MarshalJSON()
+}
+
+func (c *RMBCentRO) UnmarshalJSON(b []byte) error {
 	return nil
 }

@@ -40,6 +40,8 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/Juminiy/kube v1.3.0 h1:4sLwFATnplJcQbhL6eoT/BJfBGtpwt4w1K5kx6M8QBY=
 github.com/Juminiy/kube v1.3.0/go.mod h1:1ByAw6X6t744QKHYo+vg0kynStNncTUbQH3dXeaJZJU=
+github.com/Juminiy/kube v1.3.1 h1:6EjlEYo0Lxf2DGSj3r+CgiQ2zxcJxHHgwZwN+FPn45Q=
+github.com/Juminiy/kube v1.3.1/go.mod h1:8jwZVNNyMXv793Zfi5TTpQMsDC9mW3kxSIf1USPMyF4=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
 github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
